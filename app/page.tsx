@@ -23,8 +23,8 @@
  *       reach us + store finder > store details > closing block > powered by.
  *
  * Rating works exactly like the Mango receipt (flashing stars until the first tap, 4 category ratings,
- * comment, send, thank-you state). Coupons have three looks: "ticket" (default), "list" and "reveal".
- * `couponVariantPicker` shows a small switcher above them; it is on automatically when running on sample data.
+ * comment, send, thank-you state). Coupons are swipeable tickets with a barcode.
+ * Purchase summary is a ruled ledger (numbered lines, Qty / Net columns) so it reads differently from Mango's.
  *
  * Phone first: designed at 400px wide. On phones (<= 520px) it is scaled with CSS `zoom` to fill the screen,
  * on larger screens it stays a centred 400px column. Hover styles only on devices that can hover.
@@ -132,7 +132,7 @@ const T_AMOUNT = "nx-bold text-[16px] leading-snug tabular-nums";
 const T_BIG = "text-[44px] leading-none tabular-nums tracking-[-0.01em]";
 
 /* Assets + links (override with props) */
-const DEFAULT_NEXT_LOGO = "/images/design-mode/next-logo.png";
+const DEFAULT_NEXT_LOGO = "/customers/next-logo.png";
 const DEFAULT_RDEP_LOGO = "/images/design-mode/RDEP-logo.png";
 const DEFAULT_INSTAGRAM_URL = "https://www.instagram.com/nextofficial/";
 const DEFAULT_STORE_LOCATOR_URL = "https://www.google.com/maps/search/NEXT+store+near+me";
@@ -210,13 +210,6 @@ export interface FeedbackValues {
   comment: string;
 }
 
-export type CouponVariant = "ticket" | "list" | "reveal";
-const VARIANTS: { id: CouponVariant; label: string }[] = [
-  { id: "ticket", label: "Ticket" },
-  { id: "list", label: "List" },
-  { id: "reveal", label: "Reveal" },
-];
-
 export interface NextReceiptProps {
   data?: NextReceiptData;
   receipts?: NextReceiptData[];
@@ -225,10 +218,6 @@ export interface NextReceiptProps {
   rdepLogoSrc?: string;
   instagramUrl?: string;
   storeLocatorUrl?: string;
-  /** How the coupons are shown. Default "ticket". */
-  couponVariant?: CouponVariant;
-  /** Show a small switcher above the coupons to try every look. Defaults to on when running on sample data. */
-  couponVariantPicker?: boolean;
   onDownload?: (receipt: NextReceiptData) => void;
   onSendEmail?: (email: string, receipt: NextReceiptData) => void;
   onSaveProfile?: (values: ProfileValues) => void;
@@ -239,7 +228,7 @@ export interface NextReceiptProps {
 type IconName =
   | "history" | "mail" | "download" | "phone" | "instagram" | "pin" | "store"
   | "close" | "check" | "arrow" | "chevron" | "user" | "tax" | "directions" | "call"
-  | "star" | "ticket" | "qr" | "lock";
+  | "star" | "ticket" | "qr";
 type ModalId = "history" | "email" | "qr" | null;
 
 interface HistoryRow {
@@ -447,7 +436,6 @@ const PATHS: Record<IconName, ReactNode> = {
   star: <path d={STAR_PATH} />,
   ticket: (<><path d="M3 9a2 2 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a2 2 0 0 1 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1z" /><path d="M9 9h6M9 12h6M9 15h3" /></>),
   qr: (<><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><path d="M14 14h3v3h-3zM20 14v.01M14 20h3M20 18v3" /></>),
-  lock: (<><rect x="5" y="11" width="14" height="10" rx="1" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></>),
   close: <path d="M18 6 6 18M6 6l12 12" />,
   check: <path d="m5 12 5 5 9-10" />,
   arrow: <path d="M5 12h14M13 6l6 6-6 6" />,
@@ -694,8 +682,10 @@ function Modal({ title, onClose, scale, children }: { title: string; onClose: ()
   );
 }
 
-/* ------------------------------ item row ----------------------------------------- */
-function ItemRow({ item, open, onToggle }: { item: NextItem; open: boolean; onToggle: () => void }) {
+/* ------------------------------ item row (ledger line) --------------------------- */
+const LEDGER_COLS = "grid-cols-[26px_minmax(0,1fr)_28px_92px]";
+
+function ItemRow({ item, index, open, onToggle }: { item: NextItem; index: number; open: boolean; onToggle: () => void }) {
   const panelId = useId();
   const net = netOf(item);
   const gross = item.mrp * item.qty;
@@ -707,15 +697,13 @@ function ItemRow({ item, open, onToggle }: { item: NextItem; open: boolean; onTo
         onClick={onToggle}
         aria-expanded={open}
         aria-controls={panelId}
-        className={`grid w-full grid-cols-[40px_minmax(0,1fr)_auto] items-start gap-3 py-4 text-left ${focusRing}`}
+        className={`grid w-full ${LEDGER_COLS} items-start gap-x-3 px-5 py-4 text-left ${focusRing}`}
       >
-        <span aria-label={`Size ${item.size}`} className="nx-bold grid h-10 w-10 place-items-center border border-[var(--nx-black)] text-[14px] text-[var(--nx-black)]">
-          {item.size}
-        </span>
+        <span className="nx-bold text-[14px] tabular-nums text-[var(--nx-mid)]">{String(index + 1).padStart(2, "0")}</span>
         <span className="min-w-0">
           <span className="nx-bold block text-[14px] uppercase leading-snug tracking-[0.04em] text-[var(--nx-black)]">{item.name}</span>
-          <span className={`mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 ${T_SMALL} text-[var(--nx-gray)]`}>
-            <span>Qty {item.qty}</span>
+          <span className={`mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 ${T_SMALL} text-[var(--nx-gray)]`}>
+            <span className="nx-bold border border-[var(--nx-black)] px-1.5 py-0.5 uppercase tracking-[0.1em] text-[var(--nx-black)]">Size {item.size}</span>
             {pct > 0 && <span className="nx-bold bg-[var(--nx-black)] px-1.5 py-0.5 text-white">{pctText(pct)}% off</span>}
             <span className="nx-bold flex items-center gap-1 text-[var(--nx-black)]">
               Details
@@ -723,6 +711,7 @@ function ItemRow({ item, open, onToggle }: { item: NextItem; open: boolean; onTo
             </span>
           </span>
         </span>
+        <span className={`${T_AMOUNT} text-center text-[var(--nx-black)]`}>{item.qty}</span>
         <span className="text-right">
           <span className={`${T_AMOUNT} block text-[var(--nx-black)]`}>₹{inr(net)}</span>
           {item.discount > 0 && <s className={`mt-0.5 block ${T_SMALL} tabular-nums text-[var(--nx-mid)]`}>₹{inr(gross)}</s>}
@@ -730,7 +719,7 @@ function ItemRow({ item, open, onToggle }: { item: NextItem; open: boolean; onTo
       </button>
 
       <Collapse open={open} id={panelId}>
-        <div className="mb-4 border border-[var(--nx-line)]">
+        <div className="mx-5 mb-4 border border-[var(--nx-line)]">
           <dl className="grid grid-cols-3 divide-x divide-[var(--nx-line)]">
             {(
               [
@@ -947,8 +936,8 @@ function VideoBlock() {
   );
 }
 
-/* ============================== COUPONS: three looks =============================== */
-/* All three sit on the black band and use only black, white and greys. */
+/* ================================== COUPONS ======================================= */
+/* Tickets sit on the black band and use only black, white and greys. */
 const BAND = "#0A0A0A";
 
 interface CouponViewProps {
@@ -957,7 +946,7 @@ interface CouponViewProps {
   onCopy: (code: string) => void;
 }
 
-/* ---- 1. Ticket: swipeable tickets with a barcode, the centred one turns white ---- */
+/* ---- Coupon tickets: swipeable, with a barcode; the centred one turns white ---- */
 function TicketView({ coupons, copied, onCopy }: CouponViewProps) {
   const [active, setActive] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -1094,94 +1083,7 @@ function TicketView({ coupons, copied, onCopy }: CouponViewProps) {
   );
 }
 
-/* ---- 2. List: slim rows, best for many coupons ---- */
-function ListView({ coupons, copied, onCopy }: CouponViewProps) {
-  return (
-    <ul className="border-y border-white/20">
-      {coupons.map((c) => (
-        <li key={c.code} className="flex items-center gap-3 border-t border-white/20 py-3 first:border-t-0">
-          <span className="nx-bold grid h-[58px] w-[82px] shrink-0 place-items-center bg-white px-1 text-center text-[16px] uppercase leading-tight text-[var(--nx-black)]">{c.value}</span>
-          <span className="min-w-0 flex-1">
-            <span className={`${T_LABEL} block truncate text-white`}>{c.title}</span>
-            <span className={`${T_SMALL} mt-0.5 line-clamp-1 block text-white/70`}>{c.description}</span>
-            <span className={`${T_SMALL} mt-0.5 block text-[var(--nx-silver)]`}>
-              <span className="nx-bold tracking-[0.12em] text-white">{c.code}</span> &nbsp;till {c.validTill}
-            </span>
-          </span>
-          <button
-            type="button"
-            onClick={() => onCopy(c.code)}
-            aria-live="polite"
-            className="nx-bold shrink-0 border border-white px-3 py-2 text-[12px] uppercase tracking-[0.14em] text-white active:bg-white active:text-[var(--nx-black)]"
-          >
-            {copied === c.code ? "Copied" : "Copy"}
-          </button>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-/* ---- 3. Reveal: scratch-style tiles, tap to unlock the code ---- */
-const HATCH = "repeating-linear-gradient(135deg, rgba(255,255,255,0.14) 0 1px, transparent 1px 8px)";
-
-function RevealView({ coupons, copied, onCopy }: CouponViewProps) {
-  const [open, setOpen] = useState<Record<string, boolean>>({});
-  return (
-    <ul className={`grid gap-3 ${coupons.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
-      {coupons.map((c) => {
-        const on = !!open[c.code];
-        return (
-          <li key={c.code}>
-            {on ? (
-              <div className="flex h-full min-h-[168px] flex-col justify-between bg-white p-4 text-[var(--nx-black)]">
-                <div>
-                  <p className="nx-bold text-[20px] uppercase leading-none">{c.value}</p>
-                  <p className={`${T_SMALL} mt-1.5 text-[var(--nx-gray)]`}>Valid till {c.validTill}</p>
-                </div>
-                <div>
-                  <Barcode seed={c.code} className="h-6 w-full" />
-                  <p className="nx-bold mt-2 break-all text-[16px] tracking-[0.12em]">{c.code}</p>
-                  <button
-                    type="button"
-                    onClick={() => onCopy(c.code)}
-                    aria-live="polite"
-                    className="nx-bold mt-2 w-full bg-[var(--nx-black)] py-2.5 text-[12px] uppercase tracking-[0.14em] text-white active:bg-[var(--nx-gray)]"
-                  >
-                    {copied === c.code ? "Copied" : "Copy code"}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setOpen((o) => ({ ...o, [c.code]: true }))}
-                aria-label={`Reveal code for ${c.title}`}
-                className="flex h-full min-h-[168px] w-full flex-col justify-between border border-white/40 p-4 text-left text-white"
-                style={{ backgroundImage: HATCH }}
-              >
-                <span>
-                  <span className="nx-bold block text-[20px] uppercase leading-none">{c.value}</span>
-                  <span className={`${T_SMALL} mt-1.5 block text-white/70`}>{c.title}</span>
-                </span>
-                <span className={`${T_CAPS} nx-bold flex items-center gap-2`}>
-                  <Icon name="lock" className="h-4 w-4" />
-                  Tap to reveal
-                </span>
-              </button>
-            )}
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
-function CouponsSection({
-  coupons, variant, picker, onVariant,
-}: {
-  coupons: NextCoupon[]; variant: CouponVariant; picker: boolean; onVariant: (v: CouponVariant) => void;
-}) {
+function CouponsSection({ coupons }: { coupons: NextCoupon[] }) {
   const { copied, copy } = useCopy();
   const count = coupons.length;
 
@@ -1192,22 +1094,6 @@ function CouponsSection({
         <span className={`${T_CAPS} nx-bold border border-white/40 px-2.5 py-1 text-white`}>{count} available</span>
       </div>
 
-      {picker && (
-        <div role="group" aria-label="Coupon style" className="mt-3 grid grid-cols-3 border border-white/40">
-          {VARIANTS.map((v) => (
-            <button
-              key={v.id}
-              type="button"
-              aria-pressed={variant === v.id}
-              onClick={() => onVariant(v.id)}
-              className={`nx-bold border-l border-white/40 py-2 text-[12px] uppercase tracking-[0.14em] first:border-l-0 ${variant === v.id ? "bg-white text-[var(--nx-black)]" : "text-white"}`}
-            >
-              {v.label}
-            </button>
-          ))}
-        </div>
-      )}
-
       <div className="mt-4">
         {count === 0 ? (
           <div className="flex flex-col items-center border border-dashed border-white/30 px-6 py-7 text-center">
@@ -1215,10 +1101,6 @@ function CouponsSection({
             <p className={`${T_LABEL} mt-2 text-white`}>No coupons available</p>
             <p className={`${T_SMALL} mt-1 text-[var(--nx-silver)]`}>Please check this section later.</p>
           </div>
-        ) : variant === "list" ? (
-          <ListView coupons={coupons} copied={copied} onCopy={copy} />
-        ) : variant === "reveal" ? (
-          <RevealView coupons={coupons} copied={copied} onCopy={copy} />
         ) : (
           <TicketView coupons={coupons} copied={copied} onCopy={copy} />
         )}
@@ -1252,12 +1134,12 @@ function ClubCard({ club, mobile, sectionRef, logoSrc }: { club: NextClub; mobil
 
         <div className="relative mt-3 flex items-end justify-between gap-3">
           <div>
-            <p className={`${T_SMALL} text-[var(--nx-black)]/75`}>Club tier</p>
+            <p className={`${T_SMALL} text-[rgba(10,10,10,0.75)]`}>Club tier</p>
             <p className="nx-bold text-[26px] uppercase leading-none tracking-[0.1em]">{tier.name}</p>
           </div>
           <div className="text-right">
             <p className="nx-bold text-[26px] leading-none tabular-nums">{club.points.toLocaleString("en-IN")}</p>
-            <p className={`${T_SMALL} text-[var(--nx-black)]/75`}>points</p>
+            <p className={`${T_SMALL} text-[rgba(10,10,10,0.75)]`}>points</p>
           </div>
         </div>
 
@@ -1449,8 +1331,6 @@ function ReceiptView({
   rdepLogoSrc = DEFAULT_RDEP_LOGO,
   instagramUrl = DEFAULT_INSTAGRAM_URL,
   storeLocatorUrl = DEFAULT_STORE_LOCATOR_URL,
-  couponVariant = "ticket",
-  couponVariantPicker = false,
   onDownload,
   onSendEmail,
   onSaveProfile,
@@ -1464,7 +1344,6 @@ function ReceiptView({
   const [sentTo, setSentTo] = useState("");
   const [emailErr, setEmailErr] = useState("");
   const [passed, setPassed] = useState(false);
-  const [variant, setVariant] = useState<CouponVariant>(couponVariant);
   const closeModal = useCallback(() => setModal(null), []);
   const exchangeId = useId();
   const contactId = useId();
@@ -1565,31 +1444,47 @@ function ReceiptView({
           </div>
         </header>
 
-        {/* ---------- 2. Purchase summary, overlapping the header ---------- */}
+        {/* ---------- 2. Purchase summary: a ruled ledger, overlapping the header ---------- */}
         <section aria-label="Purchase summary" className="relative z-10 -mt-9 px-4">
-          <div className={`${sheet} p-5 text-[var(--nx-gray)] shadow-[0_26px_44px_-24px_rgba(0,0,0,0.7)]`}>
-            <div className="flex items-baseline justify-between gap-3">
+          <div className={`${sheet} text-[var(--nx-gray)] shadow-[0_26px_44px_-24px_rgba(0,0,0,0.7)]`}>
+            <div className="flex items-baseline justify-between gap-3 border-b-2 border-[var(--nx-black)] px-5 py-4">
               <h2 className={`${T_TITLE} text-[var(--nx-black)]`}>Purchase summary</h2>
               <p className={`${T_CAPS} nx-bold shrink-0 text-[var(--nx-black)]`}>
                 {t.pieces} {t.pieces === 1 ? "item" : "items"}
               </p>
             </div>
 
-            <ul aria-label="Items purchased" className="mt-3 border-t-2 border-[var(--nx-black)]">
+            <div aria-hidden="true" className={`grid ${LEDGER_COLS} gap-x-3 border-b border-[var(--nx-line)] bg-[var(--nx-wash)] px-5 py-2 ${T_CAPS} text-[var(--nx-gray)]`}>
+              <span>No</span>
+              <span>Item</span>
+              <span className="text-center">Qty</span>
+              <span className="text-right">Net</span>
+            </div>
+
+            <ul aria-label="Items purchased">
               {data.items.map((item, i) => (
-                <ItemRow key={`${item.sku}-${i}`} item={item} open={openItem === i} onToggle={() => setOpenItem(openItem === i ? -1 : i)} />
+                <ItemRow key={`${item.sku}-${i}`} item={item} index={i} open={openItem === i} onToggle={() => setOpenItem(openItem === i ? -1 : i)} />
               ))}
             </ul>
 
-            <dl className={`space-y-2.5 border-t border-[var(--nx-line)] pt-4 ${T_CAPS}`}>
-              <Leader label="Subtotal (MRP)" value={`₹${inr(t.subtotal)}`} strong className="[&_dd]:text-[14px] [&_dd]:normal-case [&_dd]:tracking-normal [&_dd]:text-[var(--nx-black)]" />
-              <Leader label="Discount" value={`− ₹${inr(t.discount)}`} strong className="[&_dd]:text-[14px] [&_dd]:normal-case [&_dd]:tracking-normal [&_dd]:text-[var(--nx-black)]" />
-              <Leader label="SGST" value={`₹${inr(data.sgst)}`} strong className="[&_dd]:text-[14px] [&_dd]:normal-case [&_dd]:tracking-normal [&_dd]:text-[var(--nx-black)]" />
-              <Leader label="CGST" value={`₹${inr(data.cgst)}`} strong className="[&_dd]:text-[14px] [&_dd]:normal-case [&_dd]:tracking-normal [&_dd]:text-[var(--nx-black)]" />
+            <dl className="border-t-2 border-[var(--nx-black)]">
+              {(
+                [
+                  ["Subtotal (MRP)", `₹${inr(t.subtotal)}`],
+                  ["Discount", `− ₹${inr(t.discount)}`],
+                  ["SGST", `₹${inr(data.sgst)}`],
+                  ["CGST", `₹${inr(data.cgst)}`],
+                ] as [string, string][]
+              ).map(([label, value]) => (
+                <div key={label} className="flex items-center justify-between gap-3 border-t border-[var(--nx-line)] px-5 py-3 first:border-t-0">
+                  <dt className={`${T_CAPS} text-[var(--nx-gray)]`}>{label}</dt>
+                  <dd className={`${T_AMOUNT} text-[var(--nx-black)]`}>{value}</dd>
+                </div>
+              ))}
             </dl>
 
             {/* the black ticket stub: punched notches, total, payment, barcode */}
-            <div className="nx-grain relative -mx-5 -mb-5 mt-6 bg-[var(--nx-black)] px-5 pb-5 pt-6 text-white">
+            <div className="nx-grain relative bg-[var(--nx-black)] px-5 pb-5 pt-6 text-white">
               <span aria-hidden="true" className="absolute -left-3 -top-3 h-6 w-6 rounded-full bg-[var(--nx-wash)]" />
               <span aria-hidden="true" className="absolute -right-3 -top-3 h-6 w-6 rounded-full bg-[var(--nx-wash)]" />
               <div className="relative">
@@ -1630,7 +1525,7 @@ function ReceiptView({
             style={{ background: `radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px) 0 0 / 14px 14px, ${BAND}` }}
           >
             <div className="relative space-y-7">
-              <CouponsSection coupons={club.coupons} variant={variant} picker={couponVariantPicker} onVariant={setVariant} />
+              <CouponsSection coupons={club.coupons} />
               <ClubCard club={club} mobile={data.customer.mobile} sectionRef={clubRef} logoSrc={logoSrc} />
             </div>
           </div>
@@ -1870,7 +1765,7 @@ function ReceiptView({
       {passed && !footerInView && !modal && (
         <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center">
           <div style={zoomStyle(scale)} className="w-[400px] px-3 pb-[max(12px,env(safe-area-inset-bottom))]">
-            <div className="nx-dock pointer-events-auto flex items-center justify-between gap-3 border border-white/25 bg-[var(--nx-black)]/95 py-2 pl-4 pr-2 text-white shadow-[0_20px_36px_-12px_rgba(0,0,0,0.8)] backdrop-blur-md">
+            <div className="nx-dock pointer-events-auto flex items-center justify-between gap-3 border border-white/25 bg-[#0A0A0A] py-2 pl-4 pr-2 text-white shadow-[0_20px_36px_-12px_rgba(0,0,0,0.8)] backdrop-blur-md">
               <div className="min-w-0">
                 <p className={`${T_CAPS} leading-none text-[var(--nx-silver)]`}>Total paid</p>
                 <p className={`${T_AMOUNT} mt-1.5 leading-none`}>₹{inr(t.total)}</p>
@@ -2021,8 +1916,7 @@ function ReceiptView({
 }
 
 /* --------------------------------- main ------------------------------------------ */
-export default function NextReceipt({ data, receipts, onSelectReceipt, couponVariantPicker, ...rest }: NextReceiptProps) {
-  const demo = !data && !receipts;
+export default function NextReceipt({ data, receipts, onSelectReceipt, ...rest }: NextReceiptProps) {
   const list = useMemo(() => {
     const base = receipts ?? (data ? [data] : sampleNextReceipts);
     const merged = data && !base.some((r) => r.invoiceNo === data.invoiceNo) ? [data, ...base] : base;
@@ -2057,5 +1951,5 @@ export default function NextReceipt({ data, receipts, onSelectReceipt, couponVar
     [onSelectReceipt],
   );
 
-  return <ReceiptView key={current.invoiceNo} data={current} history={history} onSelect={select} couponVariantPicker={couponVariantPicker ?? demo} {...rest} />;
+  return <ReceiptView key={current.invoiceNo} data={current} history={history} onSelect={select} {...rest} />;
 }
