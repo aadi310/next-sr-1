@@ -132,7 +132,7 @@ const T_AMOUNT = "nx-bold text-[16px] leading-snug tabular-nums";
 const T_BIG = "text-[44px] leading-none tabular-nums tracking-[-0.01em]";
 
 /* Assets + links (override with props) */
-const DEFAULT_NEXT_LOGO = "/customers/next-logo.png";
+const DEFAULT_NEXT_LOGO = "/images/design-mode/next-logo.png";
 const DEFAULT_RDEP_LOGO = "/images/design-mode/RDEP-logo.png";
 const DEFAULT_INSTAGRAM_URL = "https://www.instagram.com/nextofficial/";
 const DEFAULT_STORE_LOCATOR_URL = "https://www.google.com/maps/search/NEXT+store+near+me";
