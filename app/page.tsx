@@ -1599,7 +1599,7 @@ function ReceiptView({
             </div>
 
             <a
-              href={storeLocatorUrl}
+              href="https://www.robustkommerce.com/stores?brand=next"
               target="_blank"
               rel="noopener noreferrer"
               className="mt-3 flex items-center justify-between gap-4 bg-[var(--nx-black)] p-5 text-white active:bg-[var(--nx-gray)]"
