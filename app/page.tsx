@@ -135,7 +135,7 @@ const T_BIG = "text-[44px] leading-none tabular-nums tracking-[-0.01em]";
 const DEFAULT_NEXT_LOGO = "/customers/next-logo.png";
 const DEFAULT_RDEP_LOGO = "/images/design-mode/RDEP-logo.png";
 const DEFAULT_INSTAGRAM_URL = "https://www.instagram.com/nextofficial/";
-const DEFAULT_STORE_LOCATOR_URL = "https://www.google.com/maps/search/NEXT+store+near+me";
+const DEFAULT_STORE_LOCATOR_URL = "https://www.robustkommerce.com/stores?brand=next";
 
 /* Marketing video: https://youtu.be/8kRn-E-VjMA */
 const MARKETING_VIDEO_ID = "8kRn-E-VjMA";
@@ -1599,7 +1599,7 @@ function ReceiptView({
             </div>
 
             <a
-              href="https://www.robustkommerce.com/stores?brand=next"
+              href={storeLocatorUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-3 flex items-center justify-between gap-4 bg-[var(--nx-black)] p-5 text-white active:bg-[var(--nx-gray)]"
