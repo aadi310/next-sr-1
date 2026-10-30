@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * NEXT x RDEP: Smart receipt, "The Edit"
+ * NEXT x RDEP: Smart receipt, "Monochrome Navigation"
  *
- * Image-led fashion editorial concept with the full NEXT receipt journey, campaign imagery, loyalty and utility sections.
+ * Same sections and flow as the finalized Mango receipt, a completely different look.
  *
  * Thinking behind it
  *  - NEXT is black and white, so richness comes from contrast, rhythm and craft instead of colour:
@@ -134,8 +134,8 @@ const T_BIG = "text-[44px] leading-none tabular-nums tracking-[-0.01em]";
 /* Assets + links (override with props) */
 const DEFAULT_NEXT_LOGO = "/images/design-mode/next-logo.png";
 const DEFAULT_RDEP_LOGO = "/images/design-mode/RDEP-logo.png";
-const DEFAULT_INSTAGRAM_URL = "https://www.instagram.com/nextofficial/";
-const DEFAULT_STORE_LOCATOR_URL = "https://www.robustkommerce.com/stores?brand=next";
+const DEFAULT_INSTAGRAM_URL = "#next-social";
+const DEFAULT_STORE_LOCATOR_URL = "#store-details";
 
 /* Marketing video: https://youtu.be/8kRn-E-VjMA */
 const MARKETING_VIDEO_ID = "8kRn-E-VjMA";
@@ -1383,11 +1383,11 @@ function ReceiptView({
     >
       <style>{FONT_FACES}</style>
 
-      <main style={zoomStyle(scale)} className="mx-auto w-[400px] overflow-hidden bg-[var(--nx-wash)] pb-20 sm:shadow-[0_28px_64px_-26px_rgba(10,10,10,0.55)]">
+      <main style={zoomStyle(scale)} className="mx-auto w-[400px] overflow-hidden bg-[var(--nx-wash)] pb-24 sm:shadow-[0_28px_64px_-26px_rgba(10,10,10,0.55)]">
         {/* ---------- 1. Header: logo, name, QR ---------- */}
         <header
           className="nx-grain relative overflow-hidden px-5 pb-16 pt-5 text-white"
-          style={{ backgroundImage: "linear-gradient(180deg, rgba(0,0,0,.22) 0%, rgba(0,0,0,.35) 38%, #0A0A0A 100%), url(https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=1000&q=85)", backgroundSize: "cover", backgroundPosition: "center 28%" }}
+          style={{ background: "repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 10px), radial-gradient(120% 140% at 100% 0%, #2E2E2E 0%, #0A0A0A 62%)" }}
         >
           <span
             aria-hidden="true"
@@ -1541,23 +1541,42 @@ function ReceiptView({
           <VideoBlock />
         </div>
 
-        {/* NEXT EDITORIAL: image-led discovery module */}
-        <section aria-label="Discover the NEXT edit" className="mx-4 mt-8 overflow-hidden bg-white text-[var(--nx-black)]">
-          <div className="relative h-[300px] overflow-hidden bg-[#d7d7d7]">
-            <img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=1000&q=85" alt="Fashion editorial from the NEXT style edit" className="h-full w-full object-cover object-center" loading="lazy" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-            <div className="absolute bottom-5 left-5 right-5 text-white">
-              <p className={`${T_CAPS} text-white/75`}>The NEXT edit</p>
-              <h2 className="nx-bold mt-2 max-w-[280px] text-[30px] uppercase leading-[.98] tracking-[.04em]">Discover what comes next.</h2>
-              <p className="mt-2 max-w-[260px] text-[13px] leading-snug text-white/85">New-season pieces. Considered details. Your next favourite.</p>
-              <a href="https://www.next.co.uk/" target="_blank" rel="noreferrer" className="nx-bold mt-4 inline-flex border border-white px-4 py-3 text-[11px] uppercase tracking-[.14em]">Explore the collection ↗</a>
+        {/* ---------- Retailer receipt sections: next-visit offers, spend ladder, referral, gift card ---------- */}
+        <div className="space-y-4 px-4 pt-6">
+          <section aria-label="On your next visit" className="grid grid-cols-2 gap-3">
+            <article className="relative min-h-[142px] overflow-hidden bg-[var(--nx-black)] p-4 text-white">
+              <p className="text-[9px] uppercase tracking-[.18em] text-white/65">Member preview</p>
+              <h2 className="nx-bold mt-3 text-[19px] uppercase leading-[1.05]">Early access.<br/>End-of-season sale.</h2>
+              <p className="mt-2 text-[11px] leading-snug text-white/75">Get a head start on selected styles.</p>
+              <button type="button" onClick={() => document.querySelector('[aria-label="Coupons"]')?.scrollIntoView({behavior:'smooth',block:'start'})} className="mt-3 border-b border-white pb-1 text-[10px] uppercase tracking-[.12em]">View offers ↓</button>
+            </article>
+            <article className="flex min-h-[142px] flex-col justify-between border border-[var(--nx-line)] bg-white p-4 text-[var(--nx-black)]">
+              <div><p className="text-[9px] uppercase tracking-[.18em] text-[var(--nx-gray)]">Style note</p><h2 className="nx-bold mt-3 text-[17px] uppercase leading-tight">Complete the look</h2><p className="mt-2 text-[11px] leading-snug text-[var(--nx-gray)]">Find the finishing touches for your latest purchase.</p></div>
+              <button type="button" onClick={() => document.querySelector('[aria-label="Store details"]')?.scrollIntoView({behavior:'smooth',block:'start'})} className="mt-3 self-start border-b border-[var(--nx-black)] pb-1 text-[10px] uppercase tracking-[.12em]">Visit store ↓</button>
+            </article>
+          </section>
+
+          <section aria-label="Spend more, save more" className="border border-[var(--nx-line)] bg-white p-4 text-[var(--nx-black)]">
+            <p className="text-[9px] uppercase tracking-[.18em] text-[var(--nx-gray)]">Shop more. Save more. In-store.</p>
+            <h2 className="nx-bold mt-1 text-[17px]">Spend-ladder offers</h2>
+            <p className="mt-1 text-[11px] text-[var(--nx-gray)]">Unlock extra savings on your next bill.</p>
+            <div className="mt-4 grid grid-cols-3 gap-1.5 text-center">
+              <div className="border border-[var(--nx-line)] px-1 py-3"><p className="text-[9px] text-[var(--nx-gray)]">Spend ₹8,000</p><p className="nx-bold mt-1 text-[14px]">₹1,000 off</p></div>
+              <div className="border border-[var(--nx-black)] bg-[var(--nx-black)] px-1 py-3 text-white"><p className="text-[9px] text-white/70">Spend ₹12,000</p><p className="nx-bold mt-1 text-[14px]">₹2,000 off</p><p className="mt-1 text-[8px] uppercase tracking-wide">Featured</p></div>
+              <div className="border border-[var(--nx-line)] px-1 py-3"><p className="text-[9px] text-[var(--nx-gray)]">Spend ₹20,000</p><p className="nx-bold mt-1 text-[14px]">₹4,000 off</p></div>
             </div>
-          </div>
-          <div className="grid grid-cols-2 divide-x divide-[var(--nx-line)] border-x border-b border-[var(--nx-line)]">
-            <div className="p-4"><p className={`${T_CAPS} text-[var(--nx-gray)]`}>Your purchase</p><p className="nx-bold mt-1 text-[14px] uppercase">Made to be worn</p></div>
-            <div className="p-4"><p className={`${T_CAPS} text-[var(--nx-gray)]`}>Your next visit</p><p className="nx-bold mt-1 text-[14px] uppercase">Made to be found</p></div>
-          </div>
-        </section>
+            <p className="mt-3 text-[10px] leading-snug text-[var(--nx-gray)]">Illustrative offer tiers for this sample. Final thresholds and validity can be configured for the retailer.</p>
+          </section>
+
+          <section aria-label="Refer a friend" className="bg-[var(--nx-black)] p-5 text-white">
+            <div className="flex items-start justify-between gap-3"><div><p className="text-[9px] uppercase tracking-[.18em] text-white/65">Refer a friend</p><h2 className="nx-bold mt-2 text-[24px] leading-none">Give ₹500.<br/>Get ₹500.</h2></div><span aria-hidden="true" className="text-[34px] leading-none">✳</span></div>
+            <p className="mt-3 max-w-[290px] text-[12px] leading-snug text-white/75">Your friend gets ₹500 off their first qualifying purchase. You earn a reward when they shop.</p>
+            <div className="mt-4 grid grid-cols-3 gap-2 border-y border-white/20 py-3 text-[10px] text-white/80"><div><b className="block text-white">01</b>Share your code</div><div><b className="block text-white">02</b>Friend shops</div><div><b className="block text-white">03</b>You both save</div></div>
+            <div className="mt-4 flex items-center justify-between gap-2"><span className="border border-white/30 px-3 py-2 text-[12px] tracking-[.16em]">NEXT500</span><button type="button" onClick={() => { if (navigator.clipboard) navigator.clipboard.writeText('NEXT500').catch(() => {}); }} className="nx-bold bg-white px-3 py-2.5 text-[10px] uppercase tracking-[.08em] text-[var(--nx-black)]">Copy referral code</button></div>
+          </section>
+
+          <button type="button" onClick={() => document.querySelector('[aria-label="Store details"]')?.scrollIntoView({behavior:'smooth',block:'start'})} aria-label="Explore NEXT e-gift cards" className="flex w-full items-center gap-3 border border-[var(--nx-line)] bg-white p-4 text-left text-[var(--nx-black)]"><span className="grid h-11 w-11 shrink-0 place-items-center bg-[var(--nx-soft)] text-[22px]">▤</span><span className="min-w-0 flex-1"><span className="nx-bold block text-[13px]">Gift a NEXT e-Gift Card</span><span className="mt-1 block text-[11px] text-[var(--nx-gray)]">For birthdays, celebrations and just-because moments.</span></span><span aria-hidden="true">⌄</span></button>
+        </div>
 
         <div className="space-y-6 px-4 pt-8">
           {/* ---------- 6. Profile, exchange ---------- */}
@@ -1599,7 +1618,7 @@ function ReceiptView({
             <div className="mt-4 grid grid-cols-3 divide-x divide-[var(--nx-black)] border border-[var(--nx-black)]">
               {(
                 [
-                  { icon: "instagram", label: "Instagram", href: instagramUrl, ext: true },
+                  { icon: "instagram", label: "Social updates", href: "#next-social", ext: false },
                   { icon: "phone", label: "Call us", href: `tel:${data.callTo}`, ext: false },
                   { icon: "mail", label: "Email us", href: `mailto:${data.emailTo}`, ext: false },
                 ] as { icon: IconName; label: string; href: string; ext: boolean }[]
@@ -1616,11 +1635,10 @@ function ReceiptView({
               ))}
             </div>
 
-            <a
-              href={storeLocatorUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 flex items-center justify-between gap-4 bg-[var(--nx-black)] p-5 text-white active:bg-[var(--nx-gray)]"
+            <button
+              type="button"
+              onClick={() => document.querySelector('[aria-label="Store details"]')?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              className="mt-3 flex w-full items-center justify-between gap-4 bg-[var(--nx-black)] p-5 text-left text-white active:bg-[var(--nx-gray)]"
             >
               <span>
                 <span className={`${T_TITLE} block`}>Find a NEXT store</span>
@@ -1629,7 +1647,7 @@ function ReceiptView({
               <span className="grid h-10 w-10 shrink-0 place-items-center bg-white text-[var(--nx-black)]">
                 <Icon name="arrow" className="h-5 w-5" />
               </span>
-            </a>
+            </button>
           </section>
 
           {/* ---------- 8. Store details ---------- */}
@@ -1643,15 +1661,14 @@ function ReceiptView({
             </p>
 
             <div className="mt-4 grid grid-cols-2 gap-2.5">
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${store.name}, ${store.address}`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={() => setContactOpen(true)}
                 className="nx-bold flex items-center justify-center gap-2 bg-[var(--nx-black)] py-3.5 text-[12px] uppercase tracking-[0.14em] text-white active:bg-[var(--nx-gray)]"
               >
                 <Icon name="directions" className="h-4 w-4" />
-                Directions
-              </a>
+                Directions / address
+              </button>
               <a href={`tel:${store.phone}`} className={`nx-bold flex items-center justify-center gap-2 border border-[var(--nx-black)] py-3.5 text-[12px] uppercase tracking-[0.14em] text-[var(--nx-black)] ${pressInvert}`}>
                 <Icon name="call" className="h-4 w-4" />
                 Call store
@@ -1935,7 +1952,7 @@ function ReceiptView({
 }
 
 /* --------------------------------- main ------------------------------------------ */
-export default function NextReceiptOption1({ data, receipts, onSelectReceipt, ...rest }: NextReceiptProps) {
+export default function NextReceiptOption2({ data, receipts, onSelectReceipt, ...rest }: NextReceiptProps) {
   const list = useMemo(() => {
     const base = receipts ?? (data ? [data] : sampleNextReceipts);
     const merged = data && !base.some((r) => r.invoiceNo === data.invoiceNo) ? [data, ...base] : base;
