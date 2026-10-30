@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * NEXT x RDEP: Smart receipt, "Monochrome"
+ * NEXT x RDEP: Smart receipt, "The Edit"
  *
- * Same sections and flow as the finalized Mango receipt, a completely different look.
+ * Image-led fashion editorial concept with the full NEXT receipt journey, campaign imagery, loyalty and utility sections.
  *
  * Thinking behind it
  *  - NEXT is black and white, so richness comes from contrast, rhythm and craft instead of colour:
@@ -1383,11 +1383,11 @@ function ReceiptView({
     >
       <style>{FONT_FACES}</style>
 
-      <main style={zoomStyle(scale)} className="mx-auto w-[400px] overflow-hidden bg-[var(--nx-wash)] sm:shadow-[0_28px_64px_-26px_rgba(10,10,10,0.55)]">
+      <main style={zoomStyle(scale)} className="mx-auto w-[400px] overflow-hidden bg-[var(--nx-wash)] pb-20 sm:shadow-[0_28px_64px_-26px_rgba(10,10,10,0.55)]">
         {/* ---------- 1. Header: logo, name, QR ---------- */}
         <header
           className="nx-grain relative overflow-hidden px-5 pb-16 pt-5 text-white"
-          style={{ background: "repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 10px), radial-gradient(120% 140% at 100% 0%, #2E2E2E 0%, #0A0A0A 62%)" }}
+          style={{ backgroundImage: "linear-gradient(180deg, rgba(0,0,0,.22) 0%, rgba(0,0,0,.35) 38%, #0A0A0A 100%), url(https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=1000&q=85)", backgroundSize: "cover", backgroundPosition: "center 28%" }}
         >
           <span
             aria-hidden="true"
@@ -1540,6 +1540,24 @@ function ReceiptView({
         <div className="mt-8">
           <VideoBlock />
         </div>
+
+        {/* NEXT EDITORIAL: image-led discovery module */}
+        <section aria-label="Discover the NEXT edit" className="mx-4 mt-8 overflow-hidden bg-white text-[var(--nx-black)]">
+          <div className="relative h-[300px] overflow-hidden bg-[#d7d7d7]">
+            <img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=1000&q=85" alt="Fashion editorial from the NEXT style edit" className="h-full w-full object-cover object-center" loading="lazy" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+            <div className="absolute bottom-5 left-5 right-5 text-white">
+              <p className={`${T_CAPS} text-white/75`}>The NEXT edit</p>
+              <h2 className="nx-bold mt-2 max-w-[280px] text-[30px] uppercase leading-[.98] tracking-[.04em]">Discover what comes next.</h2>
+              <p className="mt-2 max-w-[260px] text-[13px] leading-snug text-white/85">New-season pieces. Considered details. Your next favourite.</p>
+              <a href="https://www.next.co.uk/" target="_blank" rel="noreferrer" className="nx-bold mt-4 inline-flex border border-white px-4 py-3 text-[11px] uppercase tracking-[.14em]">Explore the collection ↗</a>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 divide-x divide-[var(--nx-line)] border-x border-b border-[var(--nx-line)]">
+            <div className="p-4"><p className={`${T_CAPS} text-[var(--nx-gray)]`}>Your purchase</p><p className="nx-bold mt-1 text-[14px] uppercase">Made to be worn</p></div>
+            <div className="p-4"><p className={`${T_CAPS} text-[var(--nx-gray)]`}>Your next visit</p><p className="nx-bold mt-1 text-[14px] uppercase">Made to be found</p></div>
+          </div>
+        </section>
 
         <div className="space-y-6 px-4 pt-8">
           {/* ---------- 6. Profile, exchange ---------- */}
@@ -1761,23 +1779,24 @@ function ReceiptView({
         </footer>
       </main>
 
-      {/* ---------------------------- Floating dock ---------------------------- */}
-      {passed && !footerInView && !modal && (
+      {/* ---------------------------- Persistent section navigation ---------------------------- */}
+      {!modal && (
         <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center">
-          <div style={zoomStyle(scale)} className="w-[400px] px-3 pb-[max(12px,env(safe-area-inset-bottom))]">
-            <div className="nx-dock pointer-events-auto flex items-center justify-between gap-3 border border-white/25 bg-[#0A0A0A] py-2 pl-4 pr-2 text-white shadow-[0_20px_36px_-12px_rgba(0,0,0,0.8)] backdrop-blur-md">
-              <div className="min-w-0">
-                <p className={`${T_CAPS} leading-none text-[var(--nx-silver)]`}>Total paid</p>
-                <p className={`${T_AMOUNT} mt-1.5 leading-none`}>₹{inr(t.total)}</p>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {actions.map((a) => (
-                  <button key={a.label} type="button" onClick={a.onClick} aria-label={a.label} className={`grid h-11 w-11 place-items-center border border-white/30 text-white active:bg-white active:text-[var(--nx-black)] ${focusRing}`}>
-                    <Icon name={a.icon} className="h-[18px] w-[18px]" />
-                  </button>
-                ))}
-              </div>
-            </div>
+          <div style={zoomStyle(scale)} className="w-[400px] px-2 pb-[max(8px,env(safe-area-inset-bottom))]">
+            <nav aria-label="Receipt sections" className="nx-dock pointer-events-auto grid grid-cols-5 border border-white/20 bg-[#0A0A0A] text-white shadow-[0_18px_38px_-12px_rgba(0,0,0,0.65)]">
+              {[
+                { label: "Bill", icon: "history" as IconName, target: '[aria-label="Purchase summary"]' },
+                { label: "Offers", icon: "ticket" as IconName, target: '[aria-label="Coupons"]' },
+                { label: "+250", icon: "star" as IconName, target: '[aria-label="Rate your visit"]' },
+                { label: "Profile", icon: "user" as IconName, target: '[aria-label="Your profile"]' },
+                { label: "Store", icon: "pin" as IconName, target: '[aria-label="Store details"]' },
+              ].map((item) => (
+                <button key={item.label} type="button" onClick={() => document.querySelector(item.target)?.scrollIntoView({ behavior: "smooth", block: "start" })} className="flex min-w-0 flex-col items-center justify-center gap-1 border-r border-white/15 px-1 py-2.5 text-[10px] uppercase tracking-[.08em] last:border-r-0 active:bg-white active:text-[var(--nx-black)]" aria-label={`Go to ${item.label}`}>
+                  <Icon name={item.icon} className="h-[17px] w-[17px]" />
+                  <span className="nx-bold">{item.label}</span>
+                </button>
+              ))}
+            </nav>
           </div>
         </div>
       )}
@@ -1916,7 +1935,7 @@ function ReceiptView({
 }
 
 /* --------------------------------- main ------------------------------------------ */
-export default function NextReceipt({ data, receipts, onSelectReceipt, ...rest }: NextReceiptProps) {
+export default function NextReceiptOption1({ data, receipts, onSelectReceipt, ...rest }: NextReceiptProps) {
   const list = useMemo(() => {
     const base = receipts ?? (data ? [data] : sampleNextReceipts);
     const merged = data && !base.some((r) => r.invoiceNo === data.invoiceNo) ? [data, ...base] : base;
