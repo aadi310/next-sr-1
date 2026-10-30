@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * NEXT x RDEP: Smart receipt, "Monochrome Navigation"
+ * NEXT x RDEP: Smart receipt, "The Edit"
  *
- * Same sections and flow as the finalized Mango receipt, a completely different look.
+ * Image-led fashion editorial concept with the full NEXT receipt journey, campaign imagery, loyalty and utility sections.
  *
  * Thinking behind it
  *  - NEXT is black and white, so richness comes from contrast, rhythm and craft instead of colour:
@@ -1383,11 +1383,11 @@ function ReceiptView({
     >
       <style>{FONT_FACES}</style>
 
-      <main style={zoomStyle(scale)} className="mx-auto w-[400px] overflow-hidden bg-[var(--nx-wash)] pb-24 sm:shadow-[0_28px_64px_-26px_rgba(10,10,10,0.55)]">
+      <main style={zoomStyle(scale)} className="mx-auto w-[400px] overflow-hidden bg-[var(--nx-wash)] pb-20 sm:shadow-[0_28px_64px_-26px_rgba(10,10,10,0.55)]">
         {/* ---------- 1. Header: logo, name, QR ---------- */}
         <header
           className="nx-grain relative overflow-hidden px-5 pb-16 pt-5 text-white"
-          style={{ background: "repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 10px), radial-gradient(120% 140% at 100% 0%, #2E2E2E 0%, #0A0A0A 62%)" }}
+          style={{ backgroundImage: "linear-gradient(180deg, rgba(0,0,0,.22) 0%, rgba(0,0,0,.35) 38%, #0A0A0A 100%), url(https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=1000&q=85)", backgroundSize: "cover", backgroundPosition: "center 28%" }}
         >
           <span
             aria-hidden="true"
@@ -1540,6 +1540,24 @@ function ReceiptView({
         <div className="mt-8">
           <VideoBlock />
         </div>
+
+        {/* NEXT EDITORIAL: image-led discovery module */}
+        <section aria-label="Discover the NEXT edit" className="mx-4 mt-8 overflow-hidden bg-white text-[var(--nx-black)]">
+          <div className="relative h-[300px] overflow-hidden bg-[#d7d7d7]">
+            <img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=1000&q=85" alt="Fashion editorial from the NEXT style edit" className="h-full w-full object-cover object-center" loading="lazy" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+            <div className="absolute bottom-5 left-5 right-5 text-white">
+              <p className={`${T_CAPS} text-white/75`}>The NEXT edit</p>
+              <h2 className="nx-bold mt-2 max-w-[280px] text-[30px] uppercase leading-[.98] tracking-[.04em]">Discover what comes next.</h2>
+              <p className="mt-2 max-w-[260px] text-[13px] leading-snug text-white/85">New-season pieces. Considered details. Your next favourite.</p>
+              <button type="button" onClick={() => document.querySelector('[aria-label="Coupons"]')?.scrollIntoView({ behavior: "smooth", block: "start" })} className="nx-bold mt-4 inline-flex border border-white px-4 py-3 text-[11px] uppercase tracking-[.14em]">Explore your offers ↓</button>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 divide-x divide-[var(--nx-line)] border-x border-b border-[var(--nx-line)]">
+            <div className="p-4"><p className={`${T_CAPS} text-[var(--nx-gray)]`}>Your purchase</p><p className="nx-bold mt-1 text-[14px] uppercase">Made to be worn</p></div>
+            <div className="p-4"><p className={`${T_CAPS} text-[var(--nx-gray)]`}>Your next visit</p><p className="nx-bold mt-1 text-[14px] uppercase">Made to be found</p></div>
+          </div>
+        </section>
 
         {/* ---------- Retailer receipt sections: next-visit offers, spend ladder, referral, gift card ---------- */}
         <div className="space-y-4 px-4 pt-6">
@@ -1952,7 +1970,7 @@ function ReceiptView({
 }
 
 /* --------------------------------- main ------------------------------------------ */
-export default function NextReceiptOption2({ data, receipts, onSelectReceipt, ...rest }: NextReceiptProps) {
+export default function NextReceiptOption1({ data, receipts, onSelectReceipt, ...rest }: NextReceiptProps) {
   const list = useMemo(() => {
     const base = receipts ?? (data ? [data] : sampleNextReceipts);
     const merged = data && !base.some((r) => r.invoiceNo === data.invoiceNo) ? [data, ...base] : base;
