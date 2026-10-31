@@ -1,38 +1,33 @@
 "use client";
 
 /**
- * NEXT x RDEP: Smart receipt v2, "After Hours"
+ * NEXT x RDEP: Smart receipt v3, "After Hours"
  *
- * A full redesign. No squared-up ledger any more: everything is round (pills, bubbles, 32-44px cards),
- * black / paper / three loud accents (volt, lilac, coral), oversized type and moving parts.
- * This receipt is opened IN STORE, right after billing, so every action is something you can do at the
- * counter or on the shop floor. Nothing sends the shopper online.
+ * Rounded, playful, mobile first. Black + paper with soft apricot, lilac and mint accents (no neon).
+ * Opened IN STORE right after billing, so every action happens at the counter or on the shop floor.
+ * Nothing sends the shopper online.
  *
- * LOGICAL FLOW (one chapter per step, numbered 01-09 so people always know where they are)
- *   Hero      Thank you + total paid + QR + points earned badge + 4 shortcut bubbles
- *   01 Receipt   Your bag: items, totals, payment, History / Email / Download
- *   02 Points    NEXT Club card, what you earned today, progress to next tier
- *   03 Coupons   Tabs: Expiring soon / All / Member perks / New. "Use in store" opens a big barcode
- *   04 Save more Shop more, save more: slider that shows what the next bill unlocks
- *   05 Refer     Give 500, get 500: code, share, scan-to-join QR, milestone track
- *   06 Gift      Gift a NEXT card: live card preview, amount, occasion, message (paid at the counter)
- *   (video)      Inside NEXT
- *   07 Rate      How was your visit
- *   08 Profile   Complete your profile
- *   09 Store     Store details, directions, exchange policy, tax info, reach us
- *   Closing      Marquee, invoice + date, registered office, powered by
+ * FLOW
+ *   Hero      Thank you, total paid, QR, points earned, shortcut bubbles
+ *   Receipt   Your bag: items, totals, payment, History / Email / Download
+ *   Rate      How was your visit, then the "Inside NEXT" video
+ *   Profile   Details form (collapsible, open by default)
+ *   Points    NEXT Club card and progress to the next tier
+ *   Coupons   Tabs: Expiring soon / All / Member perks / New. "Use in store" opens a barcode sheet
+ *   Save more Shop more, save more slider
+ *   Refer     One link: copy or share
+ *   Gift      Pick an amount, pay at the counter
+ *   Store     Directions, exchange policy, contact, tax info
  *
- * NAVIGATION (the page is long, so there are four ways around it)
- *   1. Shortcut bubbles in the hero jump straight to Coupons / Save more / Refer / Gift.
- *   2. Sticky section rail: scroll-spy highlights the chapter you are in, auto-centres it, and a thin
- *      progress line shows how far down you are. Tap any chip to jump.
- *   3. Floating "Next" pill (appears after the hero) jumps to the following chapter.
- *   4. "Use in store" coupon sheet, so the counter never needs a scroll.
+ * NAVIGATION (thumb friendly)
+ *   1. Bottom dock with four destinations: Receipt, Rewards, Offers, Store. A sliding highlight follows scroll-spy.
+ *   2. When the active destination has several sections, a small pill row pops above the dock
+ *      (Receipt: Bill / Rate / Profile, Rewards: Points / Coupons, Offers: Save more / Refer / Gift card).
+ *   3. Hero bubbles jump straight to Coupons / Save more / Refer / Gift.
+ *   4. Thin progress line at the very top of the screen.
  *
- * Phone first: designed at 400px wide. On phones (<= 520px) it is scaled with CSS `zoom` to fill the screen,
- * on larger screens it stays a centred 400px column. Hover styles only apply on devices that can hover.
- *
- * NOTE: the sticky rail needs NO `overflow-hidden` on any ancestor, so the page uses `overflow-x-clip`.
+ * Phone first: designed at 400px wide. On phones (<= 520px) it is scaled with CSS `zoom`, on larger screens
+ * it stays a centred 400px column. Sections fade up as they scroll in (pure CSS, no JS, off for reduced motion).
  *
  * FONT: drop the NEXT font files into /public/fonts as "NextSans-Regular.ttf" (400) and "NextSans-Bold.ttf" (700).
  *       Until they exist the page falls back to Jost (next/font/google).
@@ -44,8 +39,7 @@
  *   export default function Page() { return <NextReceipt />; }
  *
  * With real data: <NextReceipt receipts={[...]} data={currentReceipt} />
- *   Optional on each receipt: `club` (tier, points, coupons), `referral`, `ladder`. Sections hide or fall back
- *   to the sample defaults below when they are missing.
+ *   Optional on each receipt: `club` (tier, points, coupons), `referral` ({ code, link?, rewardPoints }), `ladder`.
  */
 
 import {
@@ -105,10 +99,14 @@ const FONT_FACES = `
 .nx-tab{animation:nx-tab .35s cubic-bezier(.2,.7,.2,1) both}
 
 .nx-range{-webkit-appearance:none;appearance:none;height:10px;border-radius:999px;outline:none;width:100%}
-.nx-range::-webkit-slider-thumb{-webkit-appearance:none;width:32px;height:32px;border-radius:50%;background:#fff;border:7px solid var(--nx-volt);box-shadow:0 6px 16px rgba(0,0,0,.5);cursor:grab}
-.nx-range::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#fff;border:7px solid var(--nx-volt);box-shadow:0 6px 16px rgba(0,0,0,.5)}
+.nx-range::-webkit-slider-thumb{-webkit-appearance:none;width:32px;height:32px;border-radius:50%;background:#fff;border:7px solid var(--nx-glow);box-shadow:0 6px 16px rgba(0,0,0,.5);cursor:grab}
+.nx-range::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#fff;border:7px solid var(--nx-glow);box-shadow:0 6px 16px rgba(0,0,0,.5)}
+
+@keyframes nx-reveal{from{opacity:0;transform:translateY(34px) scale(.97)}to{opacity:1;transform:none}}
+@supports (animation-timeline:view()){.nx-reveal{animation:nx-reveal linear both;animation-timeline:view();animation-range:entry 0% entry 28%}}
 
 @media (prefers-reduced-motion:reduce){
+  .nx-reveal{animation:none!important}
   .nx-rise{opacity:1;animation:none}
   .nx-float,.nx-spin,.nx-marquee,.nx-pulse,.nx-star-flash,.nx-pop,.nx-tab{animation:none}
   .nx-sheen::after{animation:none;display:none}
@@ -117,7 +115,7 @@ const FONT_FACES = `
 }
 `;
 
-/* Black, paper and three loud accents. */
+/* Black, paper and soft accents: apricot (glow), lilac, mint, with coral only for urgency. */
 const theme = {
   "--nx-black": "#0B0B0C",
   "--nx-ink2": "#17171A",
@@ -125,8 +123,11 @@ const theme = {
   "--nx-gray": "#5E5E63",
   "--nx-mid": "#94949A",
   "--nx-line": "rgba(11,11,12,0.12)",
-  "--nx-volt": "#D8FF3E",
+  "--nx-glow": "#FFBE9A",
+  "--nx-peach-soft": "#F9E1D3",
   "--nx-lilac": "#C9B8FF",
+  "--nx-lilac-soft": "#E4DBFF",
+  "--nx-mint": "#BEEBD3",
   "--nx-coral": "#FF5B3A",
 } as CSSProperties;
 
@@ -191,11 +192,10 @@ export interface NextClub {
 
 export interface NextReferral {
   code: string;
+  /** Shareable join link. If omitted a sample link is built from the code. */
+  link?: string;
   /** Points the shopper AND the friend each get */
   rewardPoints: number;
-  /** Friends who have already joined */
-  joined: number;
-  milestones?: { at: number; label: string }[];
 }
 
 export interface LadderStep {
@@ -247,10 +247,6 @@ export interface FeedbackValues {
 export interface GiftCardValues {
   invoiceNo: string;
   amount: number;
-  occasion: string;
-  toName: string;
-  toMobile: string;
-  message: string;
   fromName: string;
 }
 
@@ -276,7 +272,7 @@ type IconName =
   | "history" | "mail" | "download" | "phone" | "instagram" | "pin" | "close" | "check" | "arrow" | "chevron"
   | "user" | "tax" | "directions" | "call" | "star" | "ticket" | "qr" | "bag" | "trend" | "users" | "gift"
   | "smile" | "lock" | "share" | "copy" | "clock" | "down";
-type ModalId = "history" | "email" | "qr" | "referqr" | "coupon" | null;
+type ModalId = "history" | "email" | "qr" | "coupon" | null;
 
 interface HistoryRow {
   invoiceNo: string;
@@ -431,12 +427,6 @@ const SAMPLE_LADDER: NextLadder = {
   ],
 };
 
-const DEFAULT_MILESTONES = [
-  { at: 1, label: "500 points" },
-  { at: 3, label: "+1,000 bonus points" },
-  { at: 5, label: "Surprise gift" },
-];
-
 const SAMPLE_COMMON = {
   customer: { name: "Sunil", mobile: "7975331947", email: "lekha.s@proenx.com" },
   store: {
@@ -460,7 +450,7 @@ const SAMPLE_COMMON = {
   callTo: "+919790258564",
   emailTo: "rema.k@proenx.com",
   club: SAMPLE_CLUB,
-  referral: { code: "SUNIL-NXT500", rewardPoints: 500, joined: 1 } as NextReferral,
+  referral: { code: "SUNIL-NXT500", rewardPoints: 500 } as NextReferral,
   ladder: SAMPLE_LADDER,
 };
 
@@ -617,7 +607,7 @@ const fieldInput =
   "w-full rounded-2xl border border-[var(--nx-line)] bg-[var(--nx-paper)] px-4 py-3.5 text-base text-[var(--nx-black)] outline-none transition-colors [-webkit-appearance:none] [appearance:none] placeholder:text-[var(--nx-mid)] focus:border-[var(--nx-black)] focus:bg-white";
 const fieldLabel = `${CAPS} mb-1.5 block text-[var(--nx-gray)]`;
 const solidBtn = `nx-bold flex w-full items-center justify-center gap-2 rounded-full bg-[var(--nx-black)] py-4 text-[13px] uppercase tracking-[0.14em] text-white active:bg-[var(--nx-gray)] [@media(hover:hover)]:hover:bg-[var(--nx-gray)] ${focusRing}`;
-const voltBtn = `nx-bold flex w-full items-center justify-center gap-2 rounded-full bg-[var(--nx-volt)] py-4 text-[13px] uppercase tracking-[0.14em] text-[var(--nx-black)] active:brightness-90 ${focusRing}`;
+const glowBtn = `nx-bold flex w-full items-center justify-center gap-2 rounded-full bg-[var(--nx-glow)] py-4 text-[13px] uppercase tracking-[0.14em] text-[var(--nx-black)] active:brightness-90 ${focusRing}`;
 const ghostBtn = `nx-bold inline-flex items-center justify-center gap-2 rounded-full border-2 border-[var(--nx-black)] px-5 py-3 text-[12px] uppercase tracking-[0.12em] text-[var(--nx-black)] active:bg-[var(--nx-black)] active:text-white [@media(hover:hover)]:hover:bg-[var(--nx-black)] [@media(hover:hover)]:hover:text-white ${focusRing}`;
 
 const DESIGN_W = 400;
@@ -710,12 +700,12 @@ function Collapse({ open, id, children }: { open: boolean; id: string; children:
   );
 }
 
-/** Chapter header: numbered chip + big title. `tone` flips the colours for dark panels. */
-function ChapterHead({ no, label, title, sub, dark = false }: { no: string; label: string; title: ReactNode; sub?: string; dark?: boolean }) {
+/** Chapter header: small label chip + big title. `dark` flips the colours for dark panels. */
+function ChapterHead({ label, title, sub, dark = false }: { label: string; title: ReactNode; sub?: string; dark?: boolean }) {
   return (
     <div>
-      <span className={`nx-bold inline-flex items-center gap-2 rounded-full px-3 py-1.5 ${CAPS} ${dark ? "bg-white/10 text-white" : "bg-[var(--nx-black)]/[0.07] text-[var(--nx-black)]"}`}>
-        <span className={`grid h-5 min-w-5 place-items-center rounded-full px-1 text-[10px] ${dark ? "bg-[var(--nx-volt)] text-black" : "bg-[var(--nx-black)] text-white"}`}>{no}</span>
+      <span className={`nx-bold inline-flex items-center gap-2 rounded-full px-3 py-1.5 ${CAPS} ${dark ? "bg-white/10 text-white" : "bg-[rgba(11,11,12,0.07)] text-[var(--nx-black)]"}`}>
+        <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${dark ? "bg-[var(--nx-glow)]" : "bg-[var(--nx-coral)]"}`} />
         {label}
       </span>
       <h2 className={`nx-bold mt-3 text-[34px] uppercase leading-[0.95] tracking-[-0.025em] ${dark ? "text-white" : "text-[var(--nx-black)]"}`}>{title}</h2>
@@ -807,7 +797,7 @@ function ItemRow({ item, open, onToggle }: { item: NextItem; open: boolean; onTo
           <span className="nx-bold block text-[14px] uppercase leading-snug tracking-[0.02em] text-[var(--nx-black)]">{item.name}</span>
           <span className={`mt-2 flex flex-wrap items-center gap-x-2 gap-y-1.5 ${SMALL} text-[var(--nx-gray)]`}>
             <span>Qty {item.qty}</span>
-            {pct > 0 && <span className="nx-bold rounded-full bg-[var(--nx-volt)] px-2 py-0.5 text-black">{pctText(pct)}% off</span>}
+            {pct > 0 && <span className="nx-bold rounded-full bg-[var(--nx-glow)] px-2 py-0.5 text-black">{pctText(pct)}% off</span>}
             <span className="nx-bold flex items-center gap-1 text-[var(--nx-black)]">
               Details
               <Icon name="chevron" className={`h-3.5 w-3.5 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
@@ -887,9 +877,9 @@ function ClubCard({ club, mobile, earned, logoSrc }: { club: NextClub; mobile: s
       </div>
       <div className="relative mt-5 flex items-center justify-between gap-3 rounded-full bg-[var(--nx-black)] py-2.5 pl-5 pr-2.5 text-white">
         <p className={SMALL}>
-          Earned on this bill <span className="nx-bold text-[var(--nx-volt)]">+{inr0(earned)}</span>
+          Earned on this bill <span className="nx-bold text-[var(--nx-glow)]">+{inr0(earned)}</span>
         </p>
-        <span className="nx-bold rounded-full bg-[var(--nx-volt)] px-3 py-1.5 text-[11px] uppercase tracking-[0.1em] text-black">Today</span>
+        <span className="nx-bold rounded-full bg-[var(--nx-glow)] px-3 py-1.5 text-[11px] uppercase tracking-[0.1em] text-black">Today</span>
       </div>
     </div>
   );
@@ -905,7 +895,7 @@ const TABS: { key: TabKey; label: string }[] = [
 ];
 
 const kindStyle: Record<CouponKind, { bg: string; chip: string }> = {
-  offer: { bg: "bg-[var(--nx-volt)]", chip: "Offer" },
+  offer: { bg: "bg-[var(--nx-glow)]", chip: "Offer" },
   member: { bg: "bg-[var(--nx-lilac)]", chip: "Member perk" },
   birthday: { bg: "bg-[var(--nx-coral)]", chip: "Birthday" },
 };
@@ -981,7 +971,7 @@ function CouponsSection({ coupons, now, onUse }: { coupons: NextCoupon[]; now: n
               role="tab"
               aria-selected={on}
               onClick={() => setTab(t.key)}
-              className={`nx-bold flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-[13px] ${on ? "bg-[var(--nx-volt)] text-black" : "bg-white/10 text-white active:bg-white/20"} ${focusRing}`}
+              className={`nx-bold flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-[13px] ${on ? "bg-[var(--nx-glow)] text-black" : "bg-white/10 text-white active:bg-white/20"} ${focusRing}`}
             >
               {t.key === "expiring" && <span aria-hidden="true" className={`h-2 w-2 rounded-full bg-[var(--nx-coral)] ${on ? "" : "nx-pulse"}`} />}
               {t.label}
@@ -993,7 +983,7 @@ function CouponsSection({ coupons, now, onUse }: { coupons: NextCoupon[]; now: n
 
       {list.length === 0 ? (
         <div className="mt-4 flex flex-col items-center rounded-[28px] border-2 border-dashed border-white/25 px-6 py-9 text-center text-white">
-          <Icon name="ticket" className="h-9 w-9 text-[var(--nx-volt)]" />
+          <Icon name="ticket" className="h-9 w-9 text-[var(--nx-glow)]" />
           <p className="nx-bold mt-3 text-[16px] uppercase">Nothing here right now</p>
           <p className={`mt-1 ${SMALL} text-white/65`}>Check another tab, new offers land often.</p>
         </div>
@@ -1025,7 +1015,7 @@ function SaveMore({ ladder, billed }: { ladder: NextLadder; billed: number }) {
   return (
     <div className="mt-6 space-y-4">
       <div className="nx-grain relative overflow-hidden rounded-[36px] bg-[var(--nx-black)] p-5 text-white">
-        <span aria-hidden="true" className="nx-float pointer-events-none absolute -right-14 -top-14 h-44 w-44 rounded-full bg-[var(--nx-volt)]/25 blur-2xl" />
+        <span aria-hidden="true" className="nx-float pointer-events-none absolute -right-14 -top-14 h-44 w-44 rounded-full bg-[rgba(255,190,154,0.25)] blur-2xl" />
         <p className={`relative ${CAPS} text-white/60`}>If your next bill is</p>
         <p className="nx-bold relative mt-1 text-[48px] leading-none tabular-nums tracking-[-0.03em]">₹{inr0(spend)}</p>
 
@@ -1040,15 +1030,15 @@ function SaveMore({ ladder, billed }: { ladder: NextLadder; billed: number }) {
             aria-label="Spend on a single bill"
             aria-valuetext={`₹${inr0(spend)}`}
             className="nx-range"
-            style={{ background: `linear-gradient(90deg,var(--nx-volt) ${fill}%,rgba(255,255,255,.18) ${fill}%)` }}
+            style={{ background: `linear-gradient(90deg,var(--nx-glow) ${fill}%,rgba(255,255,255,.18) ${fill}%)` }}
           />
           <div aria-hidden="true" className="relative mt-3 h-9">
             {steps.map((s) => {
               const on = spend >= s.spend;
               return (
                 <span key={s.spend} className="absolute top-0 -translate-x-1/2 text-center" style={{ left: `${posOf(s.spend)}%` }}>
-                  <span className={`mx-auto block h-2 w-0.5 ${on ? "bg-[var(--nx-volt)]" : "bg-white/30"}`} />
-                  <span className={`nx-bold mt-1 block text-[12px] ${on ? "text-[var(--nx-volt)]" : "text-white/55"}`}>{s.percent}%</span>
+                  <span className={`mx-auto block h-2 w-0.5 ${on ? "bg-[var(--nx-glow)]" : "bg-white/30"}`} />
+                  <span className={`nx-bold mt-1 block text-[12px] ${on ? "text-[var(--nx-glow)]" : "text-white/55"}`}>{s.percent}%</span>
                 </span>
               );
             })}
@@ -1063,7 +1053,7 @@ function SaveMore({ ladder, billed }: { ladder: NextLadder; billed: number }) {
                   <p className={`${CAPS} text-[var(--nx-gray)]`}>You unlock</p>
                   <p className="nx-bold mt-1 text-[22px] uppercase leading-none">{unlocked.title}</p>
                 </div>
-                <span className="nx-bold rounded-full bg-[var(--nx-volt)] px-3 py-1.5 text-[18px] leading-none">{unlocked.percent}% off</span>
+                <span className="nx-bold rounded-full bg-[var(--nx-glow)] px-3 py-1.5 text-[18px] leading-none">{unlocked.percent}% off</span>
               </div>
               <p className="nx-bold mt-4 text-[28px] leading-none tabular-nums">
                 You save ₹{inr0(saving)}
@@ -1087,25 +1077,6 @@ function SaveMore({ ladder, billed }: { ladder: NextLadder; billed: number }) {
         </div>
       </div>
 
-      <ol className="space-y-2.5">
-        {steps.map((s, i) => {
-          const on = spend >= s.spend;
-          return (
-            <li key={s.spend} className={`flex items-center gap-3.5 rounded-[26px] border p-3.5 transition-colors ${on ? "border-transparent bg-[var(--nx-volt)]" : "border-black/10 bg-white"}`}>
-              <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-full ${on ? "bg-[var(--nx-black)] text-[var(--nx-volt)]" : "bg-[var(--nx-paper)] text-[var(--nx-gray)]"}`}>
-                <Icon name={on ? "check" : "lock"} className="h-5 w-5" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="nx-bold text-[15px] uppercase leading-tight text-[var(--nx-black)]">
-                  <span className="mr-1.5 opacity-50">0{i + 1}</span>Spend ₹{inr0(s.spend)}+
-                </p>
-                <p className={`mt-0.5 ${SMALL} text-[var(--nx-gray)] ${on ? "!text-black/70" : ""}`}>{s.perk}</p>
-              </div>
-              <span className="nx-bold text-[22px] leading-none tracking-[-0.02em] text-[var(--nx-black)]">{s.percent}%</span>
-            </li>
-          );
-        })}
-      </ol>
       <p className={`px-2 text-center ${SMALL} text-[var(--nx-gray)]`}>
         Applies to a single bill at any NEXT store till {ladder.validTill}. Show your mobile number at billing and the associate will apply it.
       </p>
@@ -1113,23 +1084,18 @@ function SaveMore({ ladder, billed }: { ladder: NextLadder; billed: number }) {
   );
 }
 
-/* ------------------------------ 05 refer a friend -------------------------------- */
-function ReferSection({ referral, onQr, onShare }: { referral: NextReferral; onQr: () => void; onShare: (code: string) => void }) {
+/* ------------------------------ refer a friend ----------------------------------- */
+function ReferSection({ referral, onShare }: { referral: NextReferral; onShare: (code: string) => void }) {
   const { copied, copy } = useCopy();
-  const milestones = referral.milestones ?? DEFAULT_MILESTONES;
-  const max = milestones[milestones.length - 1]?.at ?? 5;
-  const pct = Math.min(100, (referral.joined / max) * 100);
-  const steps = [
-    { icon: "share" as IconName, t: "Share your code", d: "Send it, or let a friend scan it right here." },
-    { icon: "bag" as IconName, t: "Friend shops in store", d: "They say your code or show their phone at billing." },
-    { icon: "star" as IconName, t: "You both win", d: `${inr0(referral.rewardPoints)} points each after their first bill.` },
-  ];
+  // SAMPLE link. Replace with the real join link from the NEXT loyalty API (`referral.link`).
+  const link = referral.link ?? `https://nxt.link/${referral.code}`;
+  const pts = inr0(referral.rewardPoints);
 
   const share = async () => {
-    const text = `Shop at any NEXT store with my code ${referral.code} and we both get ${inr0(referral.rewardPoints)} points.`;
+    const text = `Join NEXT with my link and we both get ${pts} points on your first purchase.`;
     try {
-      if (typeof navigator !== "undefined" && "share" in navigator) await navigator.share({ title: "NEXT", text });
-      else await copy(referral.code);
+      if (typeof navigator !== "undefined" && "share" in navigator) await navigator.share({ title: "NEXT", text, url: link });
+      else await copy(link);
       onShare(referral.code);
     } catch {
       /* share sheet dismissed */
@@ -1137,207 +1103,122 @@ function ReferSection({ referral, onQr, onShare }: { referral: NextReferral; onQ
   };
 
   return (
-    <div className="mt-6 space-y-4">
-      <div className="relative overflow-hidden rounded-[36px] bg-[var(--nx-black)] p-5 text-white">
-        <span aria-hidden="true" className="nx-float pointer-events-none absolute -left-10 -top-10 h-36 w-36 rounded-full bg-[var(--nx-lilac)]/40 blur-2xl" />
-        <p className={`relative ${CAPS} text-white/60`}>Your code</p>
-        <button
-          type="button"
-          onClick={() => copy(referral.code)}
-          aria-label={`Copy referral code ${referral.code}`}
-          className={`relative mt-2 flex w-full items-center justify-between gap-3 rounded-full border-2 border-dashed border-[var(--nx-volt)] px-5 py-4 text-left ${focusRing}`}
-        >
-          <span className="nx-bold truncate text-[22px] tracking-[0.1em] text-[var(--nx-volt)]">{referral.code}</span>
-          <span aria-live="polite" className="nx-bold flex shrink-0 items-center gap-1.5 rounded-full bg-[var(--nx-volt)] px-3 py-1.5 text-[11px] uppercase tracking-[0.1em] text-black">
-            {copied === referral.code ? "Copied" : (<><Icon name="copy" className="h-3.5 w-3.5" />Copy</>)}
-          </span>
-        </button>
-        <div className="relative mt-3 grid grid-cols-2 gap-2.5">
-          <button type="button" onClick={share} className={voltBtn}>
-            <Icon name="share" className="h-4 w-4" />
-            Share
-          </button>
-          <button type="button" onClick={onQr} className={`nx-bold flex items-center justify-center gap-2 rounded-full border-2 border-white/40 py-4 text-[13px] uppercase tracking-[0.14em] text-white active:bg-white active:text-black ${focusRing}`}>
-            <Icon name="qr" className="h-4 w-4" />
-            Scan to join
-          </button>
-        </div>
+    <div className="nx-grain relative mt-6 overflow-hidden rounded-[36px] bg-[var(--nx-black)] p-5 text-white">
+      <span aria-hidden="true" className="nx-float pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-[rgba(201,184,255,0.35)] blur-2xl" />
+      <div className="relative flex items-center gap-3.5">
+        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[var(--nx-glow)] text-black">
+          <Icon name="users" className="h-6 w-6" />
+        </span>
+        <p className={`${BODY} text-white/80`}>
+          Your friend joins and shops. You both get <span className="nx-bold text-[var(--nx-glow)]">{pts} points</span>.
+        </p>
       </div>
 
-      <div className="rounded-[32px] bg-white p-5">
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <p className={`${CAPS} text-[var(--nx-gray)]`}>Friends joined</p>
-            <p className="nx-bold mt-1 text-[34px] leading-none tabular-nums text-[var(--nx-black)]">
-              {referral.joined}
-              <span className="text-[18px] text-[var(--nx-mid)]"> / {max}</span>
-            </p>
-          </div>
-          <span className="nx-bold rounded-full bg-[var(--nx-lilac)] px-3 py-1.5 text-[12px] text-black">Keep going</span>
-        </div>
-        <div className="relative mt-5 h-3 rounded-full bg-[var(--nx-paper)]">
-          <div className="h-full rounded-full bg-[var(--nx-black)]" style={{ width: `${pct}%` }} />
-          {milestones.map((m) => (
-            <span key={m.at} aria-hidden="true" className={`absolute top-1/2 grid h-7 w-7 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-[3px] border-white text-[11px] ${referral.joined >= m.at ? "bg-[var(--nx-volt)] text-black" : "bg-[var(--nx-black)] text-white"}`} style={{ left: `${Math.min(96, (m.at / max) * 100)}%` }}>
-              <span className="nx-bold">{m.at}</span>
-            </span>
-          ))}
-        </div>
-        <ul className="mt-5 space-y-2">
-          {milestones.map((m) => {
-            const done = referral.joined >= m.at;
-            return (
-              <li key={m.at} className={`flex items-center justify-between gap-3 rounded-2xl px-4 py-3 ${done ? "bg-[var(--nx-volt)]" : "bg-[var(--nx-paper)]"}`}>
-                <span className={`${BODY} text-[var(--nx-black)]`}>
-                  <span className="nx-bold">{m.at} {m.at === 1 ? "friend" : "friends"}</span>
-                </span>
-                <span className="nx-bold flex items-center gap-1.5 text-[13px] text-[var(--nx-black)]">
-                  {m.label}
-                  {done && <Icon name="check" className="h-4 w-4" />}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+      <button
+        type="button"
+        onClick={() => copy(link)}
+        aria-label={`Copy referral link ${link}`}
+        className={`relative mt-5 flex w-full items-center justify-between gap-3 rounded-full border border-white/25 bg-white/[0.07] py-2 pl-5 pr-2 text-left ${focusRing}`}
+      >
+        <span className="nx-bold truncate text-[15px] tracking-[0.02em]">{link.replace(/^https?:\/\//, "")}</span>
+        <span aria-live="polite" className="nx-bold flex shrink-0 items-center gap-1.5 rounded-full bg-white px-3.5 py-2.5 text-[11px] uppercase tracking-[0.1em] text-black">
+          {copied === link ? (<><Icon name="check" className="h-3.5 w-3.5" />Copied</>) : (<><Icon name="copy" className="h-3.5 w-3.5" />Copy</>)}
+        </span>
+      </button>
 
-      <ol className="grid gap-2.5">
-        {steps.map((s, i) => (
-          <li key={s.t} className="flex items-start gap-3.5 rounded-[26px] bg-white/70 p-4">
-            <span className="nx-bold grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--nx-black)] text-white">
-              <Icon name={s.icon} className="h-5 w-5" />
-            </span>
-            <div className="min-w-0">
-              <p className="nx-bold text-[14px] uppercase text-[var(--nx-black)]"><span className="opacity-40">{i + 1}.</span> {s.t}</p>
-              <p className={`mt-0.5 ${SMALL} text-[var(--nx-gray)]`}>{s.d}</p>
-            </div>
-          </li>
-        ))}
-      </ol>
+      <button type="button" onClick={share} className={`${glowBtn} relative mt-3`}>
+        <Icon name="share" className="h-4 w-4" />
+        Share with a friend
+      </button>
     </div>
   );
 }
 
-/* ------------------------------ 06 gift a NEXT card ------------------------------ */
+/* ------------------------------ gift a NEXT card --------------------------------- */
 const GIFT_AMOUNTS = [500, 1000, 2000, 5000];
-const OCCASIONS: { name: string; bg: string; ink: "dark" | "light" }[] = [
-  { name: "Birthday", bg: "linear-gradient(135deg,#FF5B3A 0%,#FFB199 100%)", ink: "dark" },
-  { name: "Thank you", bg: "linear-gradient(135deg,#D8FF3E 0%,#8CF2B5 100%)", ink: "dark" },
-  { name: "Congrats", bg: "linear-gradient(135deg,#C9B8FF 0%,#FFB8E1 100%)", ink: "dark" },
-  { name: "Just because", bg: "linear-gradient(135deg,#0B0B0C 0%,#3A3A40 100%)", ink: "light" },
-];
 
 function GiftSection({ data, onRequest }: { data: NextReceiptData; onRequest?: (v: GiftCardValues) => void }) {
-  const [amount, setAmount] = useState(2000);
+  const [amount, setAmount] = useState(1000);
   const [custom, setCustom] = useState("");
-  const [occasion, setOccasion] = useState(OCCASIONS[0].name);
-  const [toName, setToName] = useState("");
-  const [toMobile, setToMobile] = useState("");
-  const [message, setMessage] = useState("");
+  const [otherOpen, setOtherOpen] = useState(false);
   const [err, setErr] = useState("");
   const [sent, setSent] = useState<GiftCardValues | null>(null);
-  const msgId = useId();
+  const otherId = useId();
 
-  const theme2 = OCCASIONS.find((o) => o.name === occasion) ?? OCCASIONS[0];
-  const dark = theme2.ink === "light";
   const finalAmount = custom ? Number(custom) : amount;
+  const valid = Number.isFinite(finalAmount) && finalAmount >= 500 && finalAmount <= 25000;
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (!Number.isFinite(finalAmount) || finalAmount < 500 || finalAmount > 25000) return setErr("Pick an amount between ₹500 and ₹25,000.");
-    if (!toName.trim()) return setErr("Add the name of the person you are gifting.");
-    if (!/^\d{10}$/.test(toMobile)) return setErr("Enter their 10 digit mobile number.");
+    if (!valid) {
+      setOtherOpen(true);
+      setErr("Pick an amount between ₹500 and ₹25,000.");
+      return;
+    }
     setErr("");
-    const values: GiftCardValues = { invoiceNo: data.invoiceNo, amount: finalAmount, occasion, toName: toName.trim(), toMobile, message: message.trim(), fromName: data.customer.name };
+    const values: GiftCardValues = { invoiceNo: data.invoiceNo, amount: finalAmount, fromName: data.customer.name };
     onRequest?.(values);
     setSent(values);
   };
 
   return (
-    <div className="mt-6">
-      {/* live card preview */}
-      <div className={`nx-sheen relative aspect-[1.62] w-full rounded-[32px] p-5 shadow-[0_28px_44px_-22px_rgba(11,11,12,0.7)] ${dark ? "text-white" : "text-[var(--nx-black)]"}`} style={{ background: theme2.bg }}>
-        <span aria-hidden="true" className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full border-[18px] border-current opacity-10" />
-        <span aria-hidden="true" className="pointer-events-none absolute -bottom-12 left-10 h-32 w-32 rounded-full border-[10px] border-current opacity-10" />
+    <div className="mt-6 space-y-3">
+      <div className="nx-sheen nx-grain relative aspect-[1.9] w-full rounded-[32px] p-5 text-white shadow-[0_28px_44px_-22px_rgba(11,11,12,0.7)]" style={{ background: "linear-gradient(135deg,#0B0B0C 0%,#2B2442 100%)" }}>
+        <span aria-hidden="true" className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full border-[18px] border-[var(--nx-lilac)] opacity-30" />
+        <span aria-hidden="true" className="pointer-events-none absolute -bottom-16 right-14 h-32 w-32 rounded-full border-[10px] border-[var(--nx-glow)] opacity-25" />
         <div className="relative flex h-full flex-col justify-between">
           <div className="flex items-start justify-between">
             <span className="nx-bold text-[22px] uppercase tracking-[0.34em]">NEXT</span>
-            <span className={`nx-bold rounded-full px-3 py-1 ${CAPS} text-[10px] ${dark ? "bg-white/15" : "bg-black/10"}`}>{occasion}</span>
+            <span className={`nx-bold rounded-full bg-white/15 px-3 py-1 ${CAPS} text-[10px]`}>Gift card</span>
           </div>
-          <div>
-            <p className="nx-bold text-[44px] leading-none tabular-nums tracking-[-0.03em]">₹{Number.isFinite(finalAmount) ? inr0(finalAmount) : "0"}</p>
-            <p className={`mt-2 truncate ${BODY}`}>
-              <span className="opacity-70">For </span>
-              <span className="nx-bold">{toName.trim() || "someone special"}</span>
-            </p>
-            <p className={`mt-0.5 line-clamp-1 ${SMALL} opacity-75`}>{message.trim() || "Your message appears here."}</p>
-          </div>
+          <p className="nx-bold text-[46px] leading-none tabular-nums tracking-[-0.03em] text-[var(--nx-glow)]">₹{valid ? inr0(finalAmount) : "0"}</p>
         </div>
       </div>
 
       {sent ? (
-        <div className="mt-4 rounded-[32px] bg-[var(--nx-black)] p-5 text-white" aria-live="polite">
-          <span className="grid h-12 w-12 place-items-center rounded-full bg-[var(--nx-volt)] text-black">
+        <div className="rounded-[32px] bg-white p-5" aria-live="polite">
+          <span className="grid h-12 w-12 place-items-center rounded-full bg-[var(--nx-mint)] text-black">
             <Icon name="check" className="h-6 w-6" />
           </span>
-          <p className="nx-bold mt-4 text-[22px] uppercase leading-tight">Gift card ready for {sent.toName}</p>
-          <p className={`mt-2 ${BODY} text-white/75`}>
-            Show this screen to <span className="nx-bold text-white">{data.store.associate}</span> at the billing counter and pay ₹{inr0(sent.amount)}. We will send the card to {sent.toMobile} straight after.
+          <p className="nx-bold mt-4 text-[22px] uppercase leading-tight text-[var(--nx-black)]">₹{inr0(sent.amount)} gift card</p>
+          <p className={`mt-2 ${BODY}`}>
+            Show this screen to <span className="nx-bold text-[var(--nx-black)]">{data.store.associate}</span> at the billing counter. Pay ₹{inr0(sent.amount)} and they will issue the card on the spot.
           </p>
-          <button type="button" onClick={() => setSent(null)} className={`nx-bold mt-4 underline underline-offset-4 ${SMALL}`}>
-            Make changes
+          <button type="button" onClick={() => setSent(null)} className={`nx-bold mt-4 underline underline-offset-4 ${SMALL} text-[var(--nx-black)]`}>
+            Change amount
           </button>
         </div>
       ) : (
-        <form onSubmit={submit} noValidate className="mt-4 space-y-5 rounded-[32px] bg-white p-5">
-          <fieldset>
-            <legend className={fieldLabel}>Amount</legend>
-            <div className="grid grid-cols-4 gap-2">
-              {GIFT_AMOUNTS.map((a) => {
-                const on = !custom && amount === a;
-                return (
-                  <button key={a} type="button" aria-pressed={on} onClick={() => { setCustom(""); setAmount(a); }} className={`nx-bold rounded-full py-3 text-[14px] tabular-nums ${on ? "bg-[var(--nx-black)] text-white" : "bg-[var(--nx-paper)] text-[var(--nx-black)]"} ${focusRing}`}>
-                    ₹{inr0(a)}
-                  </button>
-                );
-              })}
-            </div>
-            <input inputMode="numeric" value={custom} onChange={(e) => setCustom(e.target.value.replace(/\D/g, "").slice(0, 5))} placeholder="Or type an amount (₹500 to ₹25,000)" className={`${fieldInput} mt-2`} aria-label="Custom amount" />
-          </fieldset>
-
-          <fieldset>
-            <legend className={fieldLabel}>Occasion</legend>
-            <div className="flex flex-wrap gap-2">
-              {OCCASIONS.map((o) => (
-                <button key={o.name} type="button" aria-pressed={occasion === o.name} onClick={() => setOccasion(o.name)} className={`nx-bold rounded-full px-4 py-2.5 text-[13px] ${occasion === o.name ? "bg-[var(--nx-black)] text-white" : "bg-[var(--nx-paper)] text-[var(--nx-black)]"} ${focusRing}`}>
-                  {o.name}
+        <form onSubmit={submit} noValidate className="rounded-[32px] bg-white p-4">
+          <div role="group" aria-label="Gift card amount" className="grid grid-cols-4 gap-2">
+            {GIFT_AMOUNTS.map((a) => {
+              const on = !custom && amount === a;
+              return (
+                <button key={a} type="button" aria-pressed={on} onClick={() => { setCustom(""); setErr(""); setAmount(a); }} className={`nx-bold rounded-full py-3.5 text-[14px] tabular-nums ${on ? "bg-[var(--nx-black)] text-white" : "bg-[var(--nx-paper)] text-[var(--nx-black)]"} ${focusRing}`}>
+                  ₹{inr0(a)}
                 </button>
-              ))}
-            </div>
-          </fieldset>
-
-          <div className="grid gap-4">
-            <label className="block">
-              <span className={fieldLabel}>Their name</span>
-              <input className={fieldInput} value={toName} onChange={(e) => setToName(e.target.value)} placeholder="Who is it for?" autoComplete="off" />
-            </label>
-            <label className="block">
-              <span className={fieldLabel}>Their mobile</span>
-              <input className={fieldInput} inputMode="numeric" value={toMobile} onChange={(e) => setToMobile(e.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="10 digit number" autoComplete="off" />
-            </label>
-            <div>
-              <label htmlFor={msgId} className={fieldLabel}>Message (optional)</label>
-              <textarea id={msgId} rows={2} maxLength={80} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Say something nice" className={`${fieldInput} resize-none`} />
-              <p className={`mt-1 text-right ${SMALL} text-[var(--nx-mid)]`}>{message.length}/80</p>
-            </div>
+              );
+            })}
           </div>
 
-          {err && <p role="alert" className="nx-bold rounded-2xl bg-[var(--nx-coral)]/15 px-4 py-3 text-[13px] text-[var(--nx-black)]">{err}</p>}
-          <button type="submit" className={solidBtn}>
-            <Icon name="gift" className="h-4 w-4" />
-            Gift ₹{Number.isFinite(finalAmount) ? inr0(finalAmount) : "0"}
+          <button type="button" onClick={() => setOtherOpen((o) => !o)} aria-expanded={otherOpen} aria-controls={otherId} className={`mt-2.5 flex w-full items-center justify-between gap-2 rounded-full bg-[var(--nx-paper)] py-2 pl-5 pr-2 text-left ${focusRing}`}>
+            <span className={`${LABEL} text-[var(--nx-black)]`}>{custom ? `Other amount: ₹${inr0(Number(custom))}` : "Other amount"}</span>
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-[var(--nx-black)] text-white">
+              <Icon name="chevron" className={`h-4 w-4 transition-transform duration-300 ${otherOpen ? "rotate-180" : ""}`} />
+            </span>
           </button>
-          <p className={`text-center ${SMALL} text-[var(--nx-gray)]`}>You pay at the billing counter. The card is sent to their phone by SMS right after.</p>
+          <Collapse open={otherOpen} id={otherId}>
+            <div className="p-1 pt-3">
+              <input inputMode="numeric" value={custom} onChange={(e) => { setErr(""); setCustom(e.target.value.replace(/\D/g, "").slice(0, 5)); }} placeholder="₹500 to ₹25,000" aria-label="Custom amount" className={fieldInput} />
+            </div>
+          </Collapse>
+
+          {err && <p role="alert" className="nx-bold mt-3 rounded-2xl bg-[rgba(255,91,58,0.15)] px-4 py-3 text-[13px] text-[var(--nx-black)]">{err}</p>}
+          <button type="submit" className={`${solidBtn} mt-3`}>
+            <Icon name="gift" className="h-4 w-4" />
+            Gift ₹{valid ? inr0(finalAmount) : "0"}
+          </button>
+          <p className={`mt-3 text-center ${SMALL}`}>Pay at the billing counter. The associate issues the card on the spot.</p>
         </form>
       )}
     </div>
@@ -1417,7 +1298,7 @@ function FeedbackCard({ data, onSubmit }: { data: NextReceiptData; onSubmit?: (v
   if (submitted) {
     return (
       <div className="flex items-start gap-3.5 rounded-[28px] bg-[var(--nx-black)] p-5 text-white" aria-live="polite">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--nx-volt)] text-black">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--nx-glow)] text-black">
           <Icon name="check" className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
@@ -1449,7 +1330,7 @@ function FeedbackCard({ data, onSubmit }: { data: NextReceiptData; onSubmit?: (v
               onClick={() => { setOverall(n); setExpanded(true); }}
               className={`grid h-[60px] flex-1 place-items-center rounded-full ${on ? "bg-[var(--nx-black)]" : "bg-[var(--nx-paper)]"} ${focusRing}`}
             >
-              <svg viewBox="0 0 24 24" strokeWidth="1.5" strokeLinejoin="round" className={`h-7 w-7 ${on ? "fill-[var(--nx-volt)] stroke-[var(--nx-volt)]" : "fill-transparent stroke-[var(--nx-black)]"} ${!overall && !hover ? "nx-star-flash" : ""}`} style={!overall && !hover ? { animationDelay: `${(n - 1) * 0.18}s` } : undefined}>
+              <svg viewBox="0 0 24 24" strokeWidth="1.5" strokeLinejoin="round" className={`h-7 w-7 ${on ? "fill-[var(--nx-glow)] stroke-[var(--nx-glow)]" : "fill-transparent stroke-[var(--nx-black)]"} ${!overall && !hover ? "nx-star-flash" : ""}`} style={!overall && !hover ? { animationDelay: `${(n - 1) * 0.18}s` } : undefined}>
                 <path d={STAR_PATH} />
               </svg>
             </button>
@@ -1496,7 +1377,7 @@ const GENDERS = ["Male", "Female", "Non-binary", "Prefer not to say"];
 function Toggle({ checked, onChange, disabled = false, label }: { checked: boolean; onChange?: (v: boolean) => void; disabled?: boolean; label: string }) {
   return (
     <button type="button" role="switch" aria-checked={checked} aria-label={label} disabled={disabled} onClick={() => onChange?.(!checked)} className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${checked ? "bg-[var(--nx-black)]" : "bg-black/15"} ${disabled ? "opacity-60" : ""} ${focusRing}`}>
-      <span aria-hidden="true" className={`absolute top-1 h-6 w-6 rounded-full transition-all ${checked ? "left-7 bg-[var(--nx-volt)]" : "left-1 bg-white"}`} />
+      <span aria-hidden="true" className={`absolute top-1 h-6 w-6 rounded-full transition-all ${checked ? "left-7 bg-[var(--nx-glow)]" : "left-1 bg-white"}`} />
     </button>
   );
 }
@@ -1505,6 +1386,8 @@ function ProfileCard({ data, onSave }: { data: NextReceiptData; onSave?: (v: Pro
   const [form, setForm] = useState<ProfileValues>({ name: data.customer.name, email: data.customer.email, gender: "", birthday: "", anniversary: "", offers: false });
   const [saved, setSaved] = useState(false);
   const [emailErr, setEmailErr] = useState("");
+  const [open, setOpen] = useState(true);
+  const panelId = useId();
   const upd = <K extends keyof ProfileValues>(k: K, v: ProfileValues[K]) => {
     setSaved(false);
     setForm((f) => ({ ...f, [k]: v }));
@@ -1522,7 +1405,18 @@ function ProfileCard({ data, onSave }: { data: NextReceiptData; onSave?: (v: Pro
   };
 
   return (
-    <form onSubmit={submit} noValidate className="mt-6 space-y-4 rounded-[32px] bg-white p-5">
+    <div className={`${card} mt-6 overflow-hidden`}>
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-controls={panelId} className={`flex w-full items-center justify-between gap-4 p-5 text-left ${focusRing}`}>
+        <span>
+          <span className="nx-bold block text-[18px] uppercase leading-tight text-[var(--nx-black)]">Your details</span>
+          <span className={`mt-0.5 block ${SMALL}`}>{saved ? "Saved. Thank you!" : "Takes about 30 seconds"}</span>
+        </span>
+        <span aria-hidden="true" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--nx-black)] text-white">
+          <Icon name="chevron" className={`h-4 w-4 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+        </span>
+      </button>
+      <Collapse open={open} id={panelId}>
+    <form onSubmit={submit} noValidate className="space-y-4 px-5 pb-5">
       <div>
         <span className={fieldLabel}>Mobile number</span>
         <p className={`${fieldInput} nx-bold tabular-nums`}>{data.customer.mobile}</p>
@@ -1588,6 +1482,8 @@ function ProfileCard({ data, onSave }: { data: NextReceiptData; onSave?: (v: Pro
         <span className="sr-only" aria-live="polite">{saved ? "Details saved" : ""}</span>
       </div>
     </form>
+      </Collapse>
+    </div>
   );
 }
 
@@ -1598,10 +1494,11 @@ interface ReceiptViewProps extends Omit<NextReceiptProps, "data" | "receipts" | 
   onSelect: (invoiceNo: string) => void;
 }
 
-interface NavItem {
+interface NavGroup {
   id: string;
   label: string;
   icon: IconName;
+  items: { id: string; label: string }[];
 }
 
 function ReceiptView({
@@ -1622,19 +1519,14 @@ function ReceiptView({
   const [emailErr, setEmailErr] = useState("");
   const [active, setActive] = useState("receipt");
   const [progress, setProgress] = useState(0);
-  const [passed, setPassed] = useState(false);
   const closeModal = useCallback(() => setModal(null), []);
   const exchangeId = useId();
   const contactId = useId();
-  const heroRef = useRef<HTMLElement>(null);
-  const railRef = useRef<HTMLDivElement>(null);
-  const chipRefs = useRef<Record<string, HTMLButtonElement | null>>({});
-  const footerRef = useRef<HTMLElement>(null);
   const scale = useFitScale();
   const now = useNow();
 
   const { store, exchange, club } = data;
-  const referral: NextReferral = data.referral ?? { code: `${data.customer.name.trim().split(/\s+/)[0].toUpperCase()}-NXT500`, rewardPoints: 500, joined: 0 };
+  const referral: NextReferral = data.referral ?? { code: `${data.customer.name.trim().split(/\s+/)[0].toUpperCase()}-NXT500`, rewardPoints: 500 };
   const ladder = data.ladder ?? SAMPLE_LADDER;
   const t = useMemo(() => totalsOf(data), [data]);
   const firstName = data.customer.name.trim().split(/\s+/)[0] || data.customer.name;
@@ -1642,27 +1534,20 @@ function ReceiptView({
   const tier = club ? TIERS.find((x) => x.name === club.tier) ?? TIERS[0] : null;
   const earned = club?.pointsEarned ?? Math.floor(t.total / 10);
   const handleDownload = () => (onDownload ? onDownload(data) : downloadReceipt(data, logoSrc, rdepLogoSrc));
-  const footerInView = useInView(footerRef, "0px", 0);
   const { copied: couponCopied, copy: copyCode } = useCopy();
 
-  const nav = useMemo<NavItem[]>(
-    () =>
-      [
-        { id: "receipt", label: "Receipt", icon: "bag" },
-        club ? { id: "points", label: "Points", icon: "star" } : null,
-        club ? { id: "coupons", label: "Coupons", icon: "ticket" } : null,
-        { id: "save", label: "Save more", icon: "trend" },
-        { id: "refer", label: "Refer", icon: "users" },
-        { id: "gift", label: "Gift card", icon: "gift" },
-        { id: "rate", label: "Rate", icon: "smile" },
-        { id: "profile", label: "Profile", icon: "user" },
-        { id: "store", label: "Store", icon: "pin" },
-      ].filter(Boolean) as NavItem[],
+  const groups = useMemo<NavGroup[]>(
+    () => [
+      { id: "receipt", label: "Receipt", icon: "bag", items: [{ id: "receipt", label: "Bill" }, { id: "rate", label: "Rate" }, { id: "profile", label: "Profile" }] },
+      ...(club ? [{ id: "rewards", label: "Rewards", icon: "star" as IconName, items: [{ id: "points", label: "Points" }, { id: "coupons", label: "Coupons" }] }] : []),
+      { id: "offers", label: "Offers", icon: "gift", items: [{ id: "save", label: "Save more" }, { id: "refer", label: "Refer" }, { id: "gift", label: "Gift card" }] },
+      { id: "store", label: "Store", icon: "pin", items: [{ id: "store", label: "Store" }] },
+    ],
     [club],
   );
-  const num = (id: string) => String(nav.findIndex((n) => n.id === id) + 1).padStart(2, "0");
-  const activeIdx = Math.max(0, nav.findIndex((n) => n.id === active));
-  const nextNav = nav[activeIdx + 1];
+  const nav = useMemo(() => groups.flatMap((g) => g.items), [groups]);
+  const activeGroupIdx = Math.max(0, groups.findIndex((g) => g.items.some((i) => i.id === active)));
+  const activeGroup = groups[activeGroupIdx];
 
   /* scroll-spy: the chapter crossing the upper third of the screen is the active one */
   useEffect(() => {
@@ -1675,14 +1560,6 @@ function ReceiptView({
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
   }, [nav]);
-
-  /* keep the active chip centred in the rail */
-  useEffect(() => {
-    const rail = railRef.current;
-    const chip = chipRefs.current[active];
-    if (!rail || !chip) return;
-    rail.scrollTo({ left: chip.offsetLeft - (rail.clientWidth - chip.offsetWidth) / 2, behavior: "smooth" });
-  }, [active]);
 
   /* page progress line */
   useEffect(() => {
@@ -1702,20 +1579,20 @@ function ReceiptView({
     };
   }, []);
 
-  /* floating Next pill shows once the hero has scrolled away */
-  useEffect(() => {
-    const el = heroRef.current;
-    if (!el || typeof IntersectionObserver === "undefined") return;
-    const io = new IntersectionObserver(([e]) => setPassed(!e.isIntersecting && e.boundingClientRect.top < 0), { threshold: 0 });
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
+  const go = (id: string) => {
+    try {
+      if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate(8);
+    } catch {
+      /* haptics unavailable */
+    }
+    jumpTo(id);
+  };
 
   const shortcuts: { id: string; label: string; icon: IconName; bg: string; badge?: string }[] = [
-    ...(club ? [{ id: "coupons", label: "Coupons", icon: "ticket" as IconName, bg: "bg-[var(--nx-volt)]", badge: String(club.coupons.length) }] : []),
+    ...(club ? [{ id: "coupons", label: "Coupons", icon: "ticket" as IconName, bg: "bg-[var(--nx-glow)]", badge: String(club.coupons.length) }] : []),
     { id: "save", label: "Save more", icon: "trend", bg: "bg-[var(--nx-lilac)]" },
     { id: "refer", label: "Refer", icon: "users", bg: "bg-white" },
-    { id: "gift", label: "Gift", icon: "gift", bg: "bg-[var(--nx-coral)]" },
+    { id: "gift", label: "Gift", icon: "gift", bg: "bg-[var(--nx-mint)]" },
   ];
 
   return (
@@ -1728,8 +1605,8 @@ function ReceiptView({
 
       <main style={zoomStyle(scale)} className="mx-auto w-[400px] overflow-x-clip bg-[var(--nx-paper)] sm:shadow-[0_30px_70px_-28px_rgba(11,11,12,0.6)]">
         {/* =============================== HERO =============================== */}
-        <header ref={heroRef} className="nx-grain relative overflow-hidden rounded-b-[44px] bg-[var(--nx-black)] px-5 pb-6 pt-5 text-white">
-          <span aria-hidden="true" className="nx-float pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full" style={{ background: "radial-gradient(circle at 35% 35%, #F0FFA6 0%, #D8FF3E 40%, rgba(216,255,62,0) 70%)", opacity: 0.85 }} />
+        <header className="nx-grain relative overflow-hidden rounded-b-[44px] bg-[var(--nx-black)] px-5 pb-6 pt-5 text-white">
+          <span aria-hidden="true" className="nx-float pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full" style={{ background: "radial-gradient(circle at 35% 35%, #FFE6D6 0%, #FFBE9A 40%, rgba(255,190,154,0) 70%)", opacity: 0.85 }} />
           <span aria-hidden="true" className="nx-float pointer-events-none absolute -bottom-24 -left-20 h-60 w-60 rounded-full" style={{ background: "radial-gradient(circle at 60% 40%, #C9B8FF 0%, rgba(201,184,255,0) 68%)", opacity: 0.7, animationDelay: "-4s" }} />
 
           <div className="nx-rise relative flex items-center justify-between gap-4">
@@ -1749,9 +1626,9 @@ function ReceiptView({
                 {firstName}
               </h1>
             </div>
-            <button type="button" onClick={() => jumpTo(club ? "points" : "receipt")} aria-label={`You earned ${earned} points`} className="relative h-[92px] w-[92px] shrink-0 text-[var(--nx-volt)]">
+            <button type="button" onClick={() => jumpTo(club ? "points" : "receipt")} aria-label={`You earned ${earned} points`} className="relative h-[92px] w-[92px] shrink-0 text-[var(--nx-glow)]">
               <SpinRing text="POINTS EARNED TODAY • POINTS EARNED TODAY • " className="nx-spin absolute inset-0 h-full w-full" />
-              <span className="absolute inset-[17px] grid place-items-center rounded-full bg-[var(--nx-volt)] text-black">
+              <span className="absolute inset-[17px] grid place-items-center rounded-full bg-[var(--nx-glow)] text-black">
                 <span className="nx-bold text-[18px] leading-none tabular-nums">+{inr0(earned)}</span>
               </span>
             </button>
@@ -1760,7 +1637,7 @@ function ReceiptView({
           <div className="nx-rise relative mt-6 flex items-center justify-between gap-3 rounded-[30px] bg-white/[0.09] p-4 backdrop-blur-sm" style={{ animationDelay: "0.2s" }}>
             <div className="min-w-0">
               <p className={`${CAPS} text-white/65`}>You paid</p>
-              <p className="nx-bold mt-1 text-[44px] leading-none tabular-nums tracking-[-0.03em] text-[var(--nx-volt)]">₹{inr(t.total)}</p>
+              <p className="nx-bold mt-1 text-[44px] leading-none tabular-nums tracking-[-0.03em] text-[var(--nx-glow)]">₹{inr(t.total)}</p>
               {t.discount > 0 && <p className={`nx-bold mt-2 inline-block rounded-full bg-white/15 px-2.5 py-1 ${SMALL}`}>Saved ₹{inr(t.discount)}</p>}
             </div>
             <button type="button" onClick={() => setModal("qr")} aria-label="View QR code" className="h-[76px] w-[76px] shrink-0 -rotate-3 rounded-[22px] bg-white p-2 text-[var(--nx-black)] shadow-[0_14px_26px_-10px_rgba(0,0,0,0.7)]">
@@ -1789,35 +1666,10 @@ function ReceiptView({
           </div>
         </header>
 
-        {/* ======================== STICKY SECTION RAIL ======================== */}
-        <nav aria-label="Receipt sections" className="sticky top-0 z-30 bg-[var(--nx-paper)]/90 px-3 pb-2 pt-3 backdrop-blur-md">
-          <div ref={railRef} className="relative flex gap-1 overflow-x-auto rounded-full bg-[var(--nx-black)] p-1.5 shadow-[0_14px_26px_-16px_rgba(11,11,12,0.8)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {nav.map((n) => {
-              const on = n.id === active;
-              return (
-                <button
-                  key={n.id}
-                  ref={(el) => { chipRefs.current[n.id] = el; }}
-                  type="button"
-                  onClick={() => jumpTo(n.id)}
-                  aria-current={on ? "true" : undefined}
-                  className={`nx-bold flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2.5 text-[12px] ${on ? "bg-[var(--nx-volt)] text-black" : "text-white/70 active:text-white"} ${focusRing}`}
-                >
-                  <Icon name={n.icon} className="h-4 w-4" />
-                  {n.label}
-                </button>
-              );
-            })}
-          </div>
-          <div aria-hidden="true" className="mx-4 mt-2 h-[3px] overflow-hidden rounded-full bg-black/10">
-            <div className="h-full rounded-full bg-[var(--nx-black)]" style={{ width: `${progress * 100}%` }} />
-          </div>
-        </nav>
-
         <div className="space-y-10 px-4 pb-10 pt-6">
-          {/* ===================== 01 RECEIPT ===================== */}
-          <section id="nx-receipt" aria-label="Your receipt" className="scroll-mt-[84px]">
-            <ChapterHead no={num("receipt")} label="Receipt" title={<>Your<br />bag.</>} sub={`Invoice ${data.invoiceNo} · ${data.date}`} />
+          {/* ===================== RECEIPT ===================== */}
+          <section id="nx-receipt" aria-label="Your receipt" className="scroll-mt-5 nx-reveal">
+            <ChapterHead label="Receipt" title={<>Your<br />bag.</>} sub={`Invoice ${data.invoiceNo} · ${data.date}`} />
             <div className={`${card} mt-5 p-5`}>
               <div className="flex items-center justify-between gap-3">
                 <p className={`${CAPS} text-[var(--nx-gray)]`}>{store.name}</p>
@@ -1846,9 +1698,9 @@ function ReceiptView({
               </dl>
 
               <div className="nx-grain relative overflow-hidden rounded-[28px] bg-[var(--nx-black)] p-5 text-white">
-                <span aria-hidden="true" className="nx-float pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-[var(--nx-volt)]/25 blur-xl" />
+                <span aria-hidden="true" className="nx-float pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-[rgba(255,190,154,0.25)] blur-xl" />
                 <p className={`relative ${CAPS} text-white/65`}>Total paid</p>
-                <p className="nx-bold relative mt-1 text-[46px] leading-none tabular-nums tracking-[-0.03em] text-[var(--nx-volt)]">₹{inr(t.total)}</p>
+                <p className="nx-bold relative mt-1 text-[46px] leading-none tabular-nums tracking-[-0.03em] text-[var(--nx-glow)]">₹{inr(t.total)}</p>
                 <div className="relative mt-5 flex items-end justify-between gap-4 border-t border-dashed border-white/30 pt-4">
                   <div className="min-w-0">
                     <p className={`${CAPS} text-white/65`}>Payment method</p>
@@ -1864,7 +1716,7 @@ function ReceiptView({
                   { icon: "mail", label: "Email", onClick: () => setModal("email") },
                   { icon: "download", label: "Download", onClick: handleDownload },
                 ] as { icon: IconName; label: string; onClick: () => void }[]).map((a) => (
-                  <button key={a.label} type="button" onClick={a.onClick} className={`nx-bold flex flex-col items-center gap-1.5 rounded-[22px] bg-[var(--nx-paper)] py-3.5 text-[11px] uppercase tracking-[0.1em] text-[var(--nx-black)] active:bg-[var(--nx-volt)] ${focusRing}`}>
+                  <button key={a.label} type="button" onClick={a.onClick} className={`nx-bold flex flex-col items-center gap-1.5 rounded-[22px] bg-[var(--nx-paper)] py-3.5 text-[11px] uppercase tracking-[0.1em] text-[var(--nx-black)] active:bg-[var(--nx-glow)] ${focusRing}`}>
                     <Icon name={a.icon} className="h-5 w-5" />
                     {a.label}
                   </button>
@@ -1873,22 +1725,38 @@ function ReceiptView({
             </div>
           </section>
 
-          {/* ===================== 02 POINTS ===================== */}
+          {/* ===================== RATE ===================== */}
+          <section id="nx-rate" aria-label="Rate your visit" className="scroll-mt-5 nx-reveal">
+            <ChapterHead label="Rate" title={<>How was<br />your visit?</>} sub={`Tell us about your experience at ${store.name.split(" ")[0]}.`} />
+            <div className={`${card} mt-5 p-5`}>
+              <FeedbackCard data={data} onSubmit={onSubmitFeedback} />
+            </div>
+          </section>
+
+          <VideoBlock />
+
+          {/* ===================== PROFILE ===================== */}
+          <section id="nx-profile" aria-label="Your profile" className="scroll-mt-5 nx-reveal">
+            <ChapterHead label="Profile" title={<>Make it<br />yours.</>} sub="Complete your profile for personalised updates and loyalty benefits." />
+            <ProfileCard data={data} onSave={onSaveProfile} />
+          </section>
+
+          {/* ===================== POINTS ===================== */}
           {club && (
-            <section id="nx-points" aria-label="NEXT Club points" className="scroll-mt-[84px]">
-              <ChapterHead no={num("points")} label="Points" title={<>Your<br />rewards.</>} sub="Points land on your mobile number automatically. Ask the associate to redeem them at billing." />
+            <section id="nx-points" aria-label="NEXT Club points" className="scroll-mt-5 nx-reveal">
+              <ChapterHead label="Points" title={<>Your<br />rewards.</>} sub="Points land on your mobile number automatically. Ask the associate to redeem them at billing." />
               <div className="mt-5">
                 <ClubCard club={club} mobile={data.customer.mobile} earned={earned} logoSrc={logoSrc} />
               </div>
             </section>
           )}
 
-          {/* ===================== 03 COUPONS ===================== */}
+          {/* ===================== COUPONS ===================== */}
           {club && (
-            <section id="nx-coupons" aria-label="Coupons" className="nx-grain relative -mx-4 scroll-mt-[84px] overflow-hidden rounded-[44px] bg-[var(--nx-black)] px-5 pb-8 pt-8">
-              <span aria-hidden="true" className="nx-float pointer-events-none absolute -right-16 top-10 h-48 w-48 rounded-full bg-[var(--nx-lilac)]/25 blur-2xl" />
+            <section id="nx-coupons" aria-label="Coupons" className="nx-grain relative -mx-4 scroll-mt-5 nx-reveal overflow-hidden rounded-[44px] bg-[var(--nx-black)] px-5 pb-8 pt-8">
+              <span aria-hidden="true" className="nx-float pointer-events-none absolute -right-16 top-10 h-48 w-48 rounded-full bg-[rgba(201,184,255,0.25)] blur-2xl" />
               <div className="relative">
-                <ChapterHead dark no={num("coupons")} label="Coupons" title={<>Use them<br /><span className="text-[var(--nx-volt)]">before</span><br />they go.</>} sub="Show any code at the billing counter. Nothing to type, nothing to scan." />
+                <ChapterHead dark label="Coupons" title={<>Use them<br /><span className="text-[var(--nx-glow)]">before</span><br />they go.</>} sub="Show any code at the billing counter. Nothing to type, nothing to scan." />
                 <div className="mt-6">
                   <CouponsSection coupons={club.coupons} now={now} onUse={(c) => { setCouponSheet(c); setModal("coupon"); }} />
                 </div>
@@ -1896,47 +1764,31 @@ function ReceiptView({
             </section>
           )}
 
-          {/* ===================== 04 SHOP MORE, SAVE MORE ===================== */}
-          <section id="nx-save" aria-label="Shop more, save more" className="scroll-mt-[84px]">
-            <ChapterHead no={num("save")} label="Save more" title={<>Shop more.<br />Save more.</>} sub="The bigger your next bill, the bigger the reward. Slide to see what you would unlock." />
+          {/* ===================== SHOP MORE, SAVE MORE ===================== */}
+          <section id="nx-save" aria-label="Shop more, save more" className="scroll-mt-5 nx-reveal">
+            <ChapterHead label="Save more" title={<>Shop more.<br />Save more.</>} sub="The bigger your next bill, the bigger the reward. Slide to see what you would unlock." />
             <SaveMore ladder={ladder} billed={t.total} />
           </section>
 
-          {/* ===================== 05 REFER ===================== */}
-          <section id="nx-refer" aria-label="Refer a friend" className="-mx-4 scroll-mt-[84px] rounded-[44px] bg-[var(--nx-volt)] px-4 pb-6 pt-8">
+          {/* ===================== REFER ===================== */}
+          <section id="nx-refer" aria-label="Refer a friend" className="-mx-4 scroll-mt-5 nx-reveal rounded-[44px] bg-[var(--nx-peach-soft)] px-4 pb-6 pt-8">
             <div className="px-1">
-              <ChapterHead no={num("refer")} label="Refer" title={<>Give {inr0(referral.rewardPoints)}.<br />Get {inr0(referral.rewardPoints)}.</>} sub="Bring a friend to any NEXT store. When they make their first purchase, you both get points." />
+              <ChapterHead label="Refer" title={<>Give {inr0(referral.rewardPoints)}.<br />Get {inr0(referral.rewardPoints)}.</>} sub="Send your link. When your friend makes their first purchase in store, you both get points." />
             </div>
-            <ReferSection referral={referral} onQr={() => setModal("referqr")} onShare={(c) => onShareReferral?.(c)} />
+            <ReferSection referral={referral} onShare={(c) => onShareReferral?.(c)} />
           </section>
 
-          {/* ===================== 06 GIFT ===================== */}
-          <section id="nx-gift" aria-label="Gift a NEXT card" className="-mx-4 scroll-mt-[84px] rounded-[44px] bg-[var(--nx-lilac)] px-4 pb-6 pt-8">
+          {/* ===================== GIFT ===================== */}
+          <section id="nx-gift" aria-label="Gift a NEXT card" className="-mx-4 scroll-mt-5 nx-reveal rounded-[44px] bg-[var(--nx-lilac-soft)] px-4 pb-6 pt-8">
             <div className="px-1">
-              <ChapterHead no={num("gift")} label="Gift card" title={<>Gift a<br />NEXT card.</>} sub="Pick an amount, add a message and pay at the counter. We send it to their phone." />
+              <ChapterHead label="Gift card" title={<>Gift a<br />NEXT card.</>} sub="Pick an amount and pay at the counter. The associate hands you the card." />
             </div>
             <GiftSection data={data} onRequest={onRequestGiftCard} />
           </section>
 
-          <VideoBlock />
-
-          {/* ===================== 07 RATE ===================== */}
-          <section id="nx-rate" aria-label="Rate your visit" className="scroll-mt-[84px]">
-            <ChapterHead no={num("rate")} label="Rate" title={<>How was<br />your visit?</>} sub={`Tell us about your experience at ${store.name.split(" ")[0]}.`} />
-            <div className={`${card} mt-5 p-5`}>
-              <FeedbackCard data={data} onSubmit={onSubmitFeedback} />
-            </div>
-          </section>
-
-          {/* ===================== 08 PROFILE ===================== */}
-          <section id="nx-profile" aria-label="Your profile" className="scroll-mt-[84px]">
-            <ChapterHead no={num("profile")} label="Profile" title={<>Make it<br />yours.</>} sub="Complete your profile for personalised updates and loyalty benefits." />
-            <ProfileCard data={data} onSave={onSaveProfile} />
-          </section>
-
-          {/* ===================== 09 STORE ===================== */}
-          <section id="nx-store" aria-label="Store and help" className="scroll-mt-[84px]">
-            <ChapterHead no={num("store")} label="Store" title={<>Need us?<br />We are here.</>} />
+          {/* ===================== STORE ===================== */}
+          <section id="nx-store" aria-label="Store and help" className="scroll-mt-5 nx-reveal">
+            <ChapterHead label="Store" title={<>Need us?<br />We are here.</>} />
 
             <div className={`${card} mt-5 p-5 text-[var(--nx-black)]`}>
               <p className={`${CAPS} text-[var(--nx-gray)]`}>You shopped at</p>
@@ -2026,7 +1878,7 @@ function ReceiptView({
                   { icon: "phone", label: "Call us", href: `tel:${data.callTo}`, ext: false },
                   { icon: "mail", label: "Email us", href: `mailto:${data.emailTo}`, ext: false },
                 ] as { icon: IconName; label: string; href: string; ext: boolean }[]).map((l) => (
-                  <a key={l.label} href={l.href} {...(l.ext ? { target: "_blank", rel: "noopener noreferrer" } : null)} className={`nx-bold flex flex-col items-center gap-2 rounded-[22px] bg-[var(--nx-paper)] py-4 text-center text-[11px] uppercase tracking-[0.1em] text-[var(--nx-black)] active:bg-[var(--nx-volt)] ${focusRing}`}>
+                  <a key={l.label} href={l.href} {...(l.ext ? { target: "_blank", rel: "noopener noreferrer" } : null)} className={`nx-bold flex flex-col items-center gap-2 rounded-[22px] bg-[var(--nx-paper)] py-4 text-center text-[11px] uppercase tracking-[0.1em] text-[var(--nx-black)] active:bg-[var(--nx-glow)] ${focusRing}`}>
                     <Icon name={l.icon} className="h-5 w-5" />
                     {l.label}
                   </a>
@@ -2037,7 +1889,7 @@ function ReceiptView({
                   <span className="nx-bold block text-[15px] uppercase tracking-[0.04em]">Find another NEXT store</span>
                   <span className={`block ${SMALL} text-white/65`}>Nearest stores across India</span>
                 </span>
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--nx-volt)] text-black">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--nx-glow)] text-black">
                   <Icon name="arrow" className="h-5 w-5" />
                 </span>
               </a>
@@ -2046,7 +1898,7 @@ function ReceiptView({
         </div>
 
         {/* ============================== CLOSING ============================== */}
-        <footer ref={footerRef}>
+        <footer>
           <div className="nx-grain relative overflow-hidden rounded-t-[44px] bg-[var(--nx-black)] pb-7 text-white">
             <div aria-hidden="true" className="overflow-hidden py-5">
               <div className="nx-marquee flex w-max">
@@ -2054,8 +1906,8 @@ function ReceiptView({
                   <span key={k} className="flex shrink-0 items-center gap-6 pr-6">
                     {[0, 1, 2, 3].map((i) => (
                       <span key={i} className="flex items-center gap-6">
-                        <span className="nx-bold text-[64px] uppercase leading-none tracking-[-0.02em]" style={{ WebkitTextStroke: "1.5px rgba(216,255,62,0.9)", color: "transparent" }}>See you soon</span>
-                        <span className="text-[34px] leading-none text-[var(--nx-volt)]">✦</span>
+                        <span className="nx-bold text-[64px] uppercase leading-none tracking-[-0.02em]" style={{ WebkitTextStroke: "1.5px rgba(255,190,154,0.9)", color: "transparent" }}>See you soon</span>
+                        <span className="text-[34px] leading-none text-[var(--nx-glow)]">✦</span>
                       </span>
                     ))}
                   </span>
@@ -2080,7 +1932,7 @@ function ReceiptView({
                 <p className={`mt-1.5 ${SMALL} text-white/70`}>{data.registeredOffice}</p>
               </div>
               <div className="mt-5 flex justify-end">
-                <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} aria-label="Back to top" className={`nx-bold flex items-center gap-1.5 rounded-full bg-[var(--nx-volt)] px-5 py-3 text-[12px] uppercase tracking-[0.14em] text-black ${focusRing}`}>
+                <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} aria-label="Back to top" className={`nx-bold flex items-center gap-1.5 rounded-full bg-[var(--nx-glow)] px-5 py-3 text-[12px] uppercase tracking-[0.14em] text-black ${focusRing}`}>
                   Top <Icon name="arrow" className="h-3.5 w-3.5 -rotate-90" />
                 </button>
               </div>
@@ -2090,20 +1942,62 @@ function ReceiptView({
             <span>Powered by</span>
             <BrandImage src={rdepLogoSrc} alt="rdep" width={240} height={80} className="h-7 w-auto" fallbackClassName="text-lg font-bold tracking-tight text-[var(--nx-black)]" />
           </div>
+          <div aria-hidden="true" className="h-28 bg-white" />
         </footer>
       </main>
 
-      {/* ---------------------------- Floating "Next chapter" pill ---------------------------- */}
-      {passed && nextNav && !footerInView && !modal && (
+      {/* ---------------------------- Progress line ---------------------------- */}
+      <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 top-0 z-40 h-[3px]">
+        <div className="h-full rounded-r-full bg-[var(--nx-coral)]" style={{ width: `${progress * 100}%` }} />
+      </div>
+
+      {/* ---------------------------- Bottom dock ---------------------------- */}
+      {!modal && (
         <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center">
-          <div style={zoomStyle(scale)} className="flex w-[400px] justify-end px-4 pb-[max(14px,env(safe-area-inset-bottom))]">
-            <button type="button" onClick={() => jumpTo(nextNav.id)} aria-label={`Next section: ${nextNav.label}`} className={`nx-pop pointer-events-auto nx-bold flex items-center gap-2 rounded-full bg-[var(--nx-black)] py-2 pl-5 pr-2 text-[12px] uppercase tracking-[0.1em] text-white shadow-[0_18px_32px_-10px_rgba(11,11,12,0.8)] ${focusRing}`}>
-              <span className="text-white/60">Next</span>
-              {nextNav.label}
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-[var(--nx-volt)] text-black">
-                <Icon name="down" className="h-4 w-4" />
-              </span>
-            </button>
+          <div style={zoomStyle(scale)} className="w-[400px] px-3 pb-[max(10px,env(safe-area-inset-bottom))]">
+            {activeGroup.items.length > 1 && (
+              <div key={activeGroup.id} className="nx-pop pointer-events-auto mb-2 flex justify-center">
+                <div className="flex gap-1 rounded-full bg-white/95 p-1 shadow-[0_14px_28px_-12px_rgba(11,11,12,0.55)] backdrop-blur">
+                  {activeGroup.items.map((i) => (
+                    <button
+                      key={i.id}
+                      type="button"
+                      onClick={() => go(i.id)}
+                      aria-current={i.id === active ? "true" : undefined}
+                      className={`nx-bold rounded-full px-4 py-2.5 text-[12px] ${i.id === active ? "bg-[var(--nx-black)] text-white" : "text-[var(--nx-black)]"} ${focusRing}`}
+                    >
+                      {i.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            <nav
+              aria-label="Receipt sections"
+              className="pointer-events-auto relative grid rounded-[32px] bg-[rgba(11,11,12,0.95)] p-1.5 shadow-[0_22px_40px_-14px_rgba(11,11,12,0.75)] backdrop-blur-md"
+              style={{ gridTemplateColumns: `repeat(${groups.length}, minmax(0, 1fr))` }}
+            >
+              <span
+                aria-hidden="true"
+                className="absolute inset-y-1.5 left-1.5 rounded-[26px] bg-[var(--nx-glow)] transition-transform duration-300 ease-[cubic-bezier(.3,.8,.3,1)] motion-reduce:transition-none"
+                style={{ width: `calc((100% - 12px) / ${groups.length})`, transform: `translateX(${activeGroupIdx * 100}%)` }}
+              />
+              {groups.map((g, gi) => {
+                const on = gi === activeGroupIdx;
+                return (
+                  <button
+                    key={g.id}
+                    type="button"
+                    onClick={() => go(g.items[0].id)}
+                    aria-current={on ? "true" : undefined}
+                    className={`nx-bold relative z-10 flex flex-col items-center gap-1 rounded-[26px] py-2.5 text-[11px] uppercase tracking-[0.08em] transition-colors ${on ? "text-black" : "text-white/70"} ${focusRing}`}
+                  >
+                    <Icon name={g.icon} className="h-5 w-5" />
+                    {g.label}
+                  </button>
+                );
+              })}
+            </nav>
           </div>
         </div>
       )}
@@ -2129,7 +2023,7 @@ function ReceiptView({
             </div>
           </div>
           <p className={`mt-4 text-center ${BODY} text-white/70`}>Hand your phone to the associate. They will apply it to your next bill.</p>
-          <button type="button" onClick={() => copyCode(couponSheet.code)} aria-live="polite" className={`${voltBtn} mt-4`}>
+          <button type="button" onClick={() => copyCode(couponSheet.code)} aria-live="polite" className={`${glowBtn} mt-4`}>
             <Icon name="copy" className="h-4 w-4" />
             {couponCopied === couponSheet.code ? "Code copied" : "Copy code"}
           </button>
@@ -2156,7 +2050,7 @@ function ReceiptView({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className={`${LABEL} tabular-nums`}>No. {h.invoiceNo}</span>
-                      {h.current && <span className="nx-bold rounded-full bg-[var(--nx-volt)] px-2 py-0.5 text-[10px] uppercase tracking-[0.1em] text-black">Current</span>}
+                      {h.current && <span className="nx-bold rounded-full bg-[var(--nx-glow)] px-2 py-0.5 text-[10px] uppercase tracking-[0.1em] text-black">Current</span>}
                     </div>
                     <p className={`mt-1 truncate ${SMALL} ${h.current ? "text-white/70" : "text-[var(--nx-gray)]"}`}>{h.date} &middot; {h.storeName}</p>
                   </div>
@@ -2178,29 +2072,20 @@ function ReceiptView({
         </Modal>
       )}
 
-      {/* ---------------------------- QR popups ---------------------------- */}
-      {(modal === "qr" || modal === "referqr") && (
-        <Modal title={modal === "qr" ? "Receipt QR code" : "Scan to join"} onClose={closeModal} scale={scale}>
+      {/* ---------------------------- QR popup ---------------------------- */}
+      {modal === "qr" && (
+        <Modal title="Receipt QR code" onClose={closeModal} scale={scale}>
           <div className="flex flex-col items-center py-2 text-center">
             <div className="mb-5 h-56 w-56 rounded-[32px] border-4 border-[var(--nx-black)] bg-white p-4">
-              {modal === "qr" && qrSrc ? (
+              {qrSrc ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={qrSrc} alt="Receipt QR code" className="h-full w-full object-contain" />
               ) : (
-                <PlaceholderQR seed={modal === "qr" ? data.invoiceNo : referral.code} />
+                <PlaceholderQR seed={data.invoiceNo} />
               )}
             </div>
-            {modal === "qr" ? (
-              <>
-                <p className={`${LABEL} tabular-nums text-[var(--nx-black)]`}>Invoice #{data.invoiceNo}</p>
-                <p className={`mt-1 max-w-[280px] ${BODY}`}>Scan this code at the store counter for instant returns or inquiries.</p>
-              </>
-            ) : (
-              <>
-                <p className="nx-bold text-[20px] tracking-[0.1em] text-[var(--nx-black)]">{referral.code}</p>
-                <p className={`mt-1 max-w-[280px] ${BODY}`}>Let your friend scan this, or tell the associate the code at billing. You both get {inr0(referral.rewardPoints)} points.</p>
-              </>
-            )}
+            <p className={`${LABEL} tabular-nums text-[var(--nx-black)]`}>Invoice #{data.invoiceNo}</p>
+            <p className={`mt-1 max-w-[280px] ${BODY}`}>Scan this code at the store counter for instant returns or inquiries.</p>
           </div>
         </Modal>
       )}
